@@ -135,3 +135,5 @@ def populateBrawlerData():
     except Exception as err:
         return (f'Other error occurred: {err}')
     
+
+print(getBattleLog("22Q90QJV"))
