@@ -2,7 +2,7 @@ import requests
 from private.private import API_KEY
 #there is no private in server dir real, hea yea ik telling u so u dont run same command 20 times 
 PLAYERS_ENDPOINT = "https://api.brawlstars.com/v1/players/"
-BEST_GLOBAL_PLAYER_DATA = "https://api.brawlstars.com/v1/rankings/global/players"
+BEST_GLOBAL_PLAYER_DATA = "https://api.brawlstars.com/v1/rankings/global"
 
 """
 Desc: 
@@ -63,7 +63,7 @@ Args:
 None
 
 Returns:
-A JSON containing the top 200 players' tags in the world
+A JSON containing the top 200 players' tags in the world for a 
 """
 def getBestGlobalPlayersTAG():
     try:
