@@ -1,6 +1,8 @@
 from flask import Flask, request
 from flask_cors import CORS
 import wrapperLibrary as wl
+BRAWLER_TO_DATA: dict = {}
+
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -34,7 +36,9 @@ def get_map_rotation():
 @app.route('/populateBrawlerData')
 def populate_brawler_data():
     data = wl.populateBrawlerData()
-    return data
+    for brawler in data['items']: 
+        BRAWLER_TO_DATA[brawler['name']] = brawler
+    return "success"
 
 if __name__ == '__main__':
     app.run(host='localhost', port=8000, debug=True)

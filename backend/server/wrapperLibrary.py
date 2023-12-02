@@ -3,7 +3,6 @@ from private.private import API_KEY
 #there is no private in server dir real, hea yea ik telling u so u dont run same command 20 times 
 PLAYERS_ENDPOINT = "https://api.brawlstars.com/v1/players/"
 BEST_GLOBAL_PLAYER_DATA = "https://api.brawlstars.com/v1/rankings/global/players"
-BRAWLER_TO_DATA: dict = {}
 
 """
 Desc: 
@@ -127,8 +126,6 @@ def populateBrawlerData():
         response = requests.get(API_URL, headers=headers)
         response.raise_for_status()
         data = response.json()
-        for brawler in data['items']: 
-            BRAWLER_TO_DATA[brawler['name']] = brawler
         return "success"
     except requests.HTTPError as http_err: 
         return (f'HTTP error occurred: {http_err}')
