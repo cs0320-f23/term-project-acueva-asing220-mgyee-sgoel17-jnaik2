@@ -1,2 +1,39 @@
-backend/private/
-frontend/.next/
+backend/server/private/
+**/__pycache__/
+
+# See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
+
+# dependencies
+frontend/brawlstars-team-optimizer/node_modules
+frontend/brawlstars-team-optimizer/.pnp
+frontend/brawlstars-team-optimizer/.pnp.js
+frontend/brawlstars-team-optimizer/.yarn/install-state.gz
+
+# testing
+frontend/brawlstars-team-optimizer/coverage
+
+# next.js
+frontend/brawlstars-team-optimizer/.next/
+frontend/brawlstars-team-optimizer/out/
+
+# production
+frontend/brawlstars-team-optimizer/build
+
+# misc
+frontend/brawlstars-team-optimizer/.DS_Store
+frontend/brawlstars-team-optimizer/*.pem
+
+# debug
+frontend/brawlstars-team-optimizer/npm-debug.log*
+frontend/brawlstars-team-optimizer/yarn-debug.log*
+frontend/brawlstars-team-optimizer/yarn-error.log*
+
+# local env files
+frontend/brawlstars-team-optimizer/.env*.local
+
+# vercel
+frontend/brawlstars-team-optimizer/.vercel
+
+# typescript
+frontend/brawlstars-team-optimizer/*.tsbuildinfo
+frontend/brawlstars-team-optimizer/next-env.d.ts

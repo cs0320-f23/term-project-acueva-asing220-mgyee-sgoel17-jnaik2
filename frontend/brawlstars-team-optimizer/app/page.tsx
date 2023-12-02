@@ -5,6 +5,7 @@ import Example from "./sampleComponent";
 import { ControlledInput as InputBox } from "./InputBox";
 import SampleBox from "./SampleBox";
 import { useState } from "react";
+import React from "react";
 
 export default function Home() {
   const [value, setValue] = useState<string>("");
