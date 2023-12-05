@@ -3,6 +3,12 @@ backend/server/private/
 
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
+# API KEYS ---- NAME OF FILE MUST BE KEYS.PY
+**/keys*
+
+# PyCharm
+.idea/
+
 # dependencies
 frontend/brawlstars-team-optimizer/node_modules
 frontend/brawlstars-team-optimizer/.pnp
