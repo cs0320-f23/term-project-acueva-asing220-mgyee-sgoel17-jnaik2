@@ -2,7 +2,7 @@
 import NavBar from "@/components/NavBar";
 import React from "react";
 
-const HowTo = () => {
+export default function HowTo() {
   return (
     <div>
       <NavBar />
@@ -11,5 +11,3 @@ const HowTo = () => {
     </div>
   );
 };
-
-export default HowTo;

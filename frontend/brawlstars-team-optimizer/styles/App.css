@@ -1,4 +1,18 @@
-.Command-box {
+.tagContainerBox {
+  display: flex; /* Set the container as flex */
+}
+
+.tagBox {
+  flex: 1; /* Make each box grow to fill available space equally */
+  margin: 5px; /* Optional: Add some margin between boxes */
+  padding: 10px;
+}
+
+.inputField {
+  width: 100%;
+}
+
+/* .Command-box {
   z-index:1;
   background-color: white;
   position: absolute;
@@ -17,4 +31,4 @@
   width: 30%;
   top: 0%;
   overflow: auto;
-}
+} */

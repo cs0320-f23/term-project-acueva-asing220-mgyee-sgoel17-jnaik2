@@ -2,7 +2,7 @@
 import NavBar from "@/components/NavBar";
 import React from "react";
 
-const About = () => {
+export default function About() {
   return (
     <div>
       <NavBar />
@@ -11,5 +11,3 @@ const About = () => {
     </div>
   );
 };
-
-export default About;
