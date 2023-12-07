@@ -12,6 +12,12 @@
   width: 100%;
 }
 
+.checkBox {
+  height: 10%;
+  overflow: auto;
+  border: 1px solid black;
+}
+
 /* .Command-box {
   z-index:1;
   background-color: white;
