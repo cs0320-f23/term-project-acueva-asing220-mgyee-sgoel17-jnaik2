@@ -1,29 +1,23 @@
 "use client";
-
-<<<<<<< HEAD
 import React from "react";
+import { Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router } from "react-router-dom";
 import HowTo from "./how-to/page";
-=======
-import Image from "next/image";
-import Example from "./sampleComponent";
-import { ControlledInput as InputBox } from "./InputBox";
-import SampleBox from "./SampleBox";
-import { useState } from "react";
-import React from "react";
->>>>>>> origin/backend
+import About from "./about/page";
+import TeamOpt2v2 from "./2v2-optimizer/page";
+import TeamOpt3v3 from "./3v3-optimizer/page";
 
-export default function Home() {
+// Remove routing
+function App() {
   return (
-    <div>
-      <HowTo></HowTo>
-    </div>
+    <HowTo></HowTo>
   );
 }
 
-// <Router>
+    // <Router>
     //   <div>
     //     <Routes>
-    //       <Route path="" element={<HowTo />} />
+    //       <Route path="/" element={<HowTo />} />
     //       <Route path="/how-to" element={<HowTo />} />
     //       <Route path="/3v3-optimizer" element={<TeamOpt3v3 />} />
     //       <Route path="/2v2-optimizer" element={<TeamOpt2v2 />} />
@@ -31,3 +25,5 @@ export default function Home() {
     //     </Routes>
     //   </div>
     // </Router>
+
+export default App;

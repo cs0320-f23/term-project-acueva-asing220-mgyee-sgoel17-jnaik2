@@ -1,6 +1,6 @@
 import os
 
-from backend.server.brawlstars_api.endpoints import populate_brawler_data
+from brawlstars_api.endpoints import populate_brawler_data
 
 BATTLE_HASHES_LOCATION = "battle_hashes"
 

@@ -16,35 +16,35 @@ export default function CheckBoxes(props: checkBoxProps) {
       <FormGroup>
         {props.currentBrawlers.map((brawlerIDNamePair) => {
           const [checked, setChecked] = useState<boolean>(false);
-          return props.brawlersOwned.has(brawlerIDNamePair[1]) ? (
+          return props.brawlersOwned.has(brawlerIDNamePair[0]) ? (
             <FormControlLabel
               control={<Checkbox />}
-              key={brawlerIDNamePair[0]}
+              key={brawlerIDNamePair[1]}
               checked={checked}
               onClick={() => {
                 let addBrawler = !checked;
                 setChecked(!checked);
                 if (addBrawler) {
                   props.setPreferredBrawlers(
-                    props.preferredBrawlers.add(brawlerIDNamePair[1])
+                    props.preferredBrawlers.add(brawlerIDNamePair[0])
                   );
                 } else {
                   props.setPreferredBrawlers(() => {
                     const preferredBrawlers = props.preferredBrawlers;
-                    preferredBrawlers.delete(brawlerIDNamePair[1]);
+                    preferredBrawlers.delete(brawlerIDNamePair[0]);
                     return preferredBrawlers;
                   });
                 }
               }}
-              label={toTitleCase(brawlerIDNamePair[1])}
+              label={toTitleCase(brawlerIDNamePair[0])}
             />
           ) : (
             <FormControlLabel
               disabled
               control={<Checkbox />}
-              key={brawlerIDNamePair[0]}
+              key={brawlerIDNamePair[1]}
               checked={checked}
-              label={toTitleCase(brawlerIDNamePair[1])}
+              label={toTitleCase(brawlerIDNamePair[0])}
             />
           );
         })}
@@ -53,6 +53,8 @@ export default function CheckBoxes(props: checkBoxProps) {
   );
 }
 
-function toTitleCase(word: string): string {
-  return word.charAt(0).toUpperCase() + word.slice(1).toLowerCase();
+function toTitleCase(str: string): string {
+  return str.toLowerCase().replace(/(?:^|\s)\w/g, (match) => {
+    return match.toUpperCase();
+  });
 }

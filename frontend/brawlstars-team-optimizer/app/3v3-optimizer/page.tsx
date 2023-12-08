@@ -2,9 +2,14 @@
 import "@/styles/App.css";
 import NavBar from "@/components/NavBar";
 import { Banner as ErrorBanner } from "@/components/Banner";
-import CheckBoxes from "@/components/CheckBoxes";
+import CheckBoxes from "@/components/checkboxes";
 import { ControlledInput as InputBox } from "@/components/InputBox";
 import React, { useEffect, useState } from "react";
+import DropDownCheckboxesTags from "@/components/DropDownCheckBox";
+import DropDownCheckBox from "@/components/DropDownCheckBox";
+import ReactTable from "@/components/ReactTable";
+import { BrawlerCard } from "@/components/BrawlerCard";
+import { BrawlerCardTable } from "@/components/BrawlerCardTable";
 
 interface Player {
   tag: string;
@@ -62,7 +67,7 @@ export default function TeamOpt3v3() {
 
   const [allBrawlers, setAllBrawlers] = useState<[string, string][]>([]);
   const [errorBanner, setErrorBanner] = useState<Error>(Error.NO_ERROR); // 0 for no banner, 1 for error with api, 2 for [insert here]
-  const [errorText, setErrorText] = useState<string>("");
+  const [errorText, setErrorText] = useState<string>("dxd");
   const player1 = usePlayerState(1);
   const player2 = usePlayerState(2);
   const player3 = usePlayerState(3);
@@ -70,26 +75,34 @@ export default function TeamOpt3v3() {
   async function getCurrentBrawlers(): Promise<[string, string][]> {
     const fetchJson = await fetch("http://localhost:8000/populateBrawlerData");
     const currentBrawlers = await fetchJson.json();
-    let brawlerIDPair: [string, string] = ["temp", "temp"];
-    let allPairs: [string, string][] = [];
-    if (!currentBrawlers) {
-      setErrorBanner(Error.NO_JSON_ERROR);
-      return [["noJson", "noJson"]]; //Do error checking, maybe display a banner?
+    if (currentBrawlers) {
+      return currentBrawlers.map((brawlerNameIDPair: [string, number]) => {
+        return [brawlerNameIDPair[0], brawlerNameIDPair[1].toString()];
+      });
     }
-    if (!currentBrawlers.items) {
-      setErrorBanner(Error.API_ERROR);
-      return [["typeError", "typeError"]]; //Do error checking, maybe display a banner?
-    }
+    setErrorBanner(Error.API_ERROR);
+    return [["real", "real"]];
 
-    for (let i = 0; i < currentBrawlers.items.length; i++) {
-      brawlerIDPair = [
-        String(currentBrawlers.items[i].id),
-        currentBrawlers.items[i].name,
-      ];
-      console.log(brawlerIDPair);
-      allPairs.push(brawlerIDPair);
-    }
-    return allPairs;
+    // let brawlerIDPair: [string, string] = ["temp", "temp"];
+    // let allPairs: [string, string][] = [];
+    // if (!currentBrawlers) {
+    //   setErrorBanner(Error.NO_JSON_ERROR);
+    //   return [["noJson", "noJson"]]; //Do error checking, maybe display a banner?
+    // }
+    // if (!currentBrawlers.items) {
+    //   setErrorBanner(Error.API_ERROR);
+    //   return [["typeError", "typeError"]]; //Do error checking, maybe display a banner?
+    // }
+
+    // for (let i = 0; i < currentBrawlers.items.length; i++) {
+    //   brawlerIDPair = [
+    //     String(currentBrawlers.items[i].id),
+    //     currentBrawlers.items[i].name,
+    //   ];
+    //   console.log(brawlerIDPair);
+    //   allPairs.push(brawlerIDPair);
+    // }
+    // return allPairs;
   }
 
   async function checkValidity() {
@@ -100,31 +113,15 @@ export default function TeamOpt3v3() {
   }
 
   function tagOrderChecker() {
-    const playerList: string[] = [player3.tag, player2.tag, player1.tag];
-    let flag: boolean = false;
-
-    for (const tag of playerList) {
-      if (tag !== "") {
-        if (flag) {
-          setErrorBanner(Error.WRONG_ORDER_ERROR);
-          return;
-        } else {
-          flag = true;
-        }
-      }
+    if (player1.tag === "" && (player2.tag !== "" || player3.tag !== "")) {
+      setErrorBanner(Error.WRONG_ORDER_ERROR);
     }
-    setErrorBanner(Error.NO_ERROR);
-    return;
 
-    // if (player1.tag === "" && (player2.tag !== "" || player3.tag !== "")) {
-    //   setErrorBanner(Error.WRONG_ORDER_ERROR);
-    // }
-
-    // if (player1.tag !== "" && player2.tag === "" && player3.tag !== "") {
-    //   setErrorBanner(Error.WRONG_ORDER_ERROR);
-    // } else {
-    //   setErrorBanner(Error.NO_ERROR);
-    // }
+    if (player1.tag !== "" && player2.tag === "" && player3.tag !== "") {
+      setErrorBanner(Error.WRONG_ORDER_ERROR);
+    } else {
+      setErrorBanner(Error.NO_ERROR);
+    }
   }
 
   // TODO, ensure that the banner is what we want!
@@ -191,13 +188,14 @@ export default function TeamOpt3v3() {
     const fetchCurrentBrawlerData = async () => {
       const currentBrawlers = await getCurrentBrawlers();
       setAllBrawlers(currentBrawlers);
+      console.log(currentBrawlers);
     };
     fetchCurrentBrawlerData();
     console.log("fetched all brawler data!");
   }, []);
 
   useEffect(() => {
-    errorToBannerText(errorBanner);
+    setErrorText(errorToBannerText(errorBanner));
   }, [errorBanner]);
 
   return (
@@ -207,67 +205,89 @@ export default function TeamOpt3v3() {
         <ErrorBanner bannerTitle={"Error:"} bannerText={errorText} />
       )}
 
-      <div className="tagContainerBox">
-        <div className="tagBox">
+      <div className="allTagsContainerBox">
+        <div className="tagContainerBox">
           <div className="checkBox">
-            {player1.isValid && (
-              <CheckBoxes
-                currentBrawlers={allBrawlers}
-                brawlersOwned={player1.brawlersOwned}
+            <DropDownCheckBox
+              currentBrawlers={allBrawlers}
+              brawlersOwned={player1.brawlersOwned}
+              preferredBrawlers={player1.preferredBrawlers}
+              setPreferredBrawlers={player1.setPreferredBrawlers}
+            />
+            <div className="brawlerCardTable">
+              <BrawlerCardTable
                 preferredBrawlers={player1.preferredBrawlers}
-                setPreferredBrawlers={player1.setPreferredBrawlers}
-              ></CheckBoxes>
-            )}
+              ></BrawlerCardTable>
+            </div>
           </div>
-          <InputBox
-            helperText={player1.helperText}
-            value={player1.tag}
-            setValue={player1.setTag}
-            handleSubmit={() => checkValidity()}
-            setValid={player1.setIsValid}
-          />
+          <div className="tagBox">
+            <InputBox
+              helperText={player1.helperText}
+              value={player1.tag}
+              setValue={player1.setTag}
+              handleSubmit={() => checkValidity()}
+              setValid={player1.setIsValid}
+            />
+          </div>
         </div>
 
-        <div className="tagBox">
+        <div className="tagContainerBox">
           <div className="checkBox">
-            {player1.isValid && player2.isValid && (
-              <CheckBoxes
-                currentBrawlers={allBrawlers}
-                brawlersOwned={player2.brawlersOwned}
-                preferredBrawlers={player2.preferredBrawlers}
-                setPreferredBrawlers={player2.setPreferredBrawlers}
-              ></CheckBoxes>
-            )}
+            <DropDownCheckBox
+              currentBrawlers={allBrawlers}
+              brawlersOwned={player2.brawlersOwned}
+              preferredBrawlers={player2.preferredBrawlers}
+              setPreferredBrawlers={player2.setPreferredBrawlers}
+            />
           </div>
-          <InputBox
-            helperText={player2.helperText}
-            value={player2.tag}
-            setValue={player2.setTag}
-            handleSubmit={() => checkValidity()}
-            setValid={player2.setIsValid}
-          />
+          <div className="tagBox">
+            <InputBox
+              helperText={player2.helperText}
+              value={player2.tag}
+              setValue={player2.setTag}
+              handleSubmit={() => checkValidity()}
+              setValid={player2.setIsValid}
+            />
+          </div>
         </div>
 
-        <div className="tagBox">
+        <div className="tagContainerBox">
           <div className="checkBox">
-            {player1.isValid && player2.isValid && player3.isValid && (
-              <CheckBoxes
-                currentBrawlers={allBrawlers}
-                brawlersOwned={player3.brawlersOwned}
-                preferredBrawlers={player3.preferredBrawlers}
-                setPreferredBrawlers={player3.setPreferredBrawlers}
-              ></CheckBoxes>
-            )}
+            <DropDownCheckBox
+              currentBrawlers={allBrawlers}
+              brawlersOwned={player3.brawlersOwned}
+              preferredBrawlers={player3.preferredBrawlers}
+              setPreferredBrawlers={player3.setPreferredBrawlers}
+            />
           </div>
-          <InputBox
-            helperText={player3.helperText}
-            value={player3.tag}
-            setValue={player3.setTag}
-            handleSubmit={() => checkValidity()}
-            setValid={player3.setIsValid}
-          />
+          <div className="tagBox">
+            <InputBox
+              helperText={player3.helperText}
+              value={player3.tag}
+              setValue={player3.setTag}
+              handleSubmit={() => checkValidity()}
+              setValid={player3.setIsValid}
+            />
+          </div>
         </div>
       </div>
+
+      <div className="tableDiv">
+        <ReactTable />
+      </div>
+
+      {/* <button
+        tabIndex={5}
+        id="button"
+        onClick={() => {
+          console.log("bad click");
+        }}
+        aria-label="Submit button"
+        aria-description="Interprets the text currently entered in the command input textbox as a command and displays the result of executing the command in the result history.
+        Alternatively, press the Enter key to submit."
+      >
+        Find your best brawlers
+      </button> */}
     </div>
   );
 }
@@ -281,6 +301,7 @@ async function checkPlayerTag(player: Player) {
   );
   tagData = await tagJson.json();
   if (tagData) {
+    console.log(tagData);
     if (tagData.reason) {
       let tag = player.tag;
       let helperText = player.helperText;
@@ -336,4 +357,6 @@ function errorToBannerText(error: Error) {
   } else if (error == Error.NO_TAG_ERROR) {
     return "Please enter a tag for the player";
   }
+
+  return "Something went wrong, please try again later";
 }
