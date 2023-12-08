@@ -1,4 +1,4 @@
-import "./styles/App.css";
+import "@/styles/App.css";
 import { Dispatch, SetStateAction, useState } from "react";
 
 /**
@@ -13,6 +13,7 @@ interface ControlledInputProps {
   helperText: string;
   value: string;
   setValue: Dispatch<SetStateAction<string>>;
+  setValid: Dispatch<SetStateAction<boolean>>;
 }
 
 /**
@@ -25,11 +26,14 @@ export function ControlledInput(props: ControlledInputProps) {
   return (
     <input
       type="text"
-      className="Command-box"
+      className="inputField"
       value={props.value}
       placeholder={props.helperText}
-      onChange={(ev) => props.setValue(ev.target.value)}
-      aria-label={"Search box for search terms"}
+      onChange={(ev) => {
+        props.setValid(false);
+        props.setValue(ev.target.value);
+      }} 
+      aria-label={"Input box for a player tag"}
       tabIndex={2}
       onKeyDown={(event: React.KeyboardEvent<HTMLDivElement>) => {
         if (event.key.toLowerCase() === "enter") {

@@ -1,0 +1,68 @@
+.allTagsContainerBox {
+  display: flex; /* Set the container as flex */
+}
+
+.tagContainerBox {
+  display: flex;
+  flex-direction: column;
+  margin-top: 5%;
+  margin-left: 2%;
+  margin-right: 2%;
+  width: 100%;
+}
+
+.tableDiv {
+  width: 75%;
+  margin: auto;
+  margin-top: 10%;
+}
+
+.brawlerCardTable {
+  overflow: auto;
+  height: 350px;
+}
+
+.checkBox {
+  height: 100%;
+  margin-bottom: 20%;
+}
+
+.checkBoxComponent {
+  width: 100%;
+}
+
+.MuiAutocomplete-listbox {
+  max-height: 100%;
+}
+
+.tagBox {
+  /* flex: 1;
+  margin: 5px; 
+  padding: 10px; */
+  margin: 5px;
+}
+
+.inputField {
+  width: 100%;
+}
+
+/* .Command-box {
+  z-index:1;
+  background-color: white;
+  position: absolute;
+  height: 5%;
+  width: 50%;
+  bottom: 0%;
+  left:25%;
+}
+
+.Data-box {
+  background-color: #a13030;
+  color: white;
+  z-index:1;
+  position: absolute;
+  height: 25%;
+  width: 30%;
+  top: 0%;
+  overflow: auto;
+} */

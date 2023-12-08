@@ -2,7 +2,7 @@ import requests
 
 from brawlstars_api.responses import BSAPIResponse, BSAPIResponseType
 from brawlstars_api.constants import PLAYERS_ENDPOINT, GLOBAL_PLAYER_RANKING_ENDPOINT, \
-    MAP_ROTATION_ENDPOINT, GLOBAL_PLAYER_RANKING_BY_BRAWLER_ENDPOINT
+    MAP_ROTATION_ENDPOINT, GLOBAL_PLAYER_RANKING_BY_BRAWLER_ENDPOINT, BRAWLER_NAMES_ENDPOINT
 from brawlstars_api.keys import API_KEY  # add your own keys.py
 
 
@@ -128,7 +128,7 @@ def populate_brawler_data(brawler_id_dict) -> BSAPIResponse:
     """
 
     try:
-        api_url = "https://api.brawlstars.com/v1/brawlers"
+        api_url = BRAWLER_NAMES_ENDPOINT
         headers = {
             'Authorization': f'Bearer {API_KEY}',
         }

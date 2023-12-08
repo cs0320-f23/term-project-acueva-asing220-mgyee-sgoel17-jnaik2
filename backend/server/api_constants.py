@@ -1,5 +1,5 @@
 # api brawler rating constants
-API_BRWL_NAME_KEY = 'brawler-name'
+API_BRAWLER_NAME_KEY = 'brawler-name'
 
 API_GLOBAL_RATING_KEY = 'global-rating'
 API_MODE_RATINGS_KEY = 'mode-ratings'
