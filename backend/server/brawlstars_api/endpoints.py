@@ -1,9 +1,9 @@
 import requests
 
-from backend.server.brawlstars_api.responses import BSAPIResponse, BSAPIResponseType
-from backend.server.brawlstars_api.constants import PLAYERS_ENDPOINT, GLOBAL_PLAYER_RANKING_ENDPOINT, \
+from brawlstars_api.responses import BSAPIResponse, BSAPIResponseType
+from brawlstars_api.constants import PLAYERS_ENDPOINT, GLOBAL_PLAYER_RANKING_ENDPOINT, \
     MAP_ROTATION_ENDPOINT, GLOBAL_PLAYER_RANKING_BY_BRAWLER_ENDPOINT
-from backend.server.brawlstars_api.keys import API_KEY  # add your own keys.py
+from brawlstars_api.keys import API_KEY  # add your own keys.py
 
 
 def get_player_battle_log(player_tag) -> BSAPIResponse:

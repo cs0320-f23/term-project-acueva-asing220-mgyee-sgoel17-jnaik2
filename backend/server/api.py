@@ -1,7 +1,7 @@
 from flask import Flask, request
 from flask_cors import CORS
-from backend.server.brawlstars_api import endpoints as api
-from backend.server.server_state import ServerState
+from brawlstars_api import endpoints as api
+from server_state import ServerState
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})

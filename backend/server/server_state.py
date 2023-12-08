@@ -1,6 +1,6 @@
 import os
 from firebase_setup import initialize_firebase
-from backend.server.brawlstars_api.endpoints import populate_brawler_data
+from brawlstars_api.endpoints import populate_brawler_data
 from trueskill_utils import BrawlerTrueSkill, TrueSkillRating, PlayerType
 
 from trueskill import rate
@@ -106,8 +106,8 @@ class BrawlerRatingsManager:
         self.__db = db
         self.brawler_name_to_trueskill = {}
 
-    def get_trueskill(self, brawler_name) -> BrawlerTrueSkill:
-        self.load_trueskill_from_db(brawler_name)
+    async def get_trueskill(self, brawler_name) -> BrawlerTrueSkill:
+        await self.load_trueskill_from_db(brawler_name)
         return self.brawler_name_to_trueskill[brawler_name]
 
     async def load_trueskill_from_db(self, brawler_name):
