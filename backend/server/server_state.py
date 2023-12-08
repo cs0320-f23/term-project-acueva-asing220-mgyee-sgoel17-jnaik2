@@ -1,7 +1,7 @@
 import os
 from firebase_setup import initialize_firebase
 from brawlstars_api.endpoints import populate_brawler_data
-from trueskill_utils import BrawlerTrueSkill, TrueSkillRating, PlayerType
+from trueskill_utils import BrawlerTrueSkill, PlayerType
 
 from trueskill import rate
 
@@ -95,7 +95,6 @@ class BattleHashStore:
         self.load_battles_from_disk(battle_time)
 
     def check_if_battle_exists(self, battle_hash, battle_time):
-        battle_time_at_hour = BattleHashStore.get_battle_time_at_hour(battle_time)
         self.load_battles_from_disk(battle_time)
 
         return self.battle_hashes[battle_hash] is not None
@@ -106,19 +105,19 @@ class BrawlerRatingsManager:
         self.__db = db
         self.brawler_name_to_trueskill = {}
 
-    async def get_trueskill(self, brawler_name) -> BrawlerTrueSkill:
-        await self.load_trueskill_from_db(brawler_name)
+    def get_trueskill(self, brawler_name) -> BrawlerTrueSkill:
+        self.load_trueskill_from_db(brawler_name)
         return self.brawler_name_to_trueskill[brawler_name]
 
-    async def load_trueskill_from_db(self, brawler_name):
+    def load_trueskill_from_db(self, brawler_name):
         if brawler_name in self.brawler_name_to_trueskill:
             return
 
         rating = BrawlerTrueSkill(brawler_name, self.__db)
-        await rating.populate_ratings()
+        rating.populate_ratings()
         self.brawler_name_to_trueskill[brawler_name] = rating
 
-    async def register_battle(self, winning_brawlers, losing_brawlers, mode_name, map_name, player_type: PlayerType):
+    def register_battle(self, winning_brawlers, losing_brawlers, mode_name, map_name, player_type: PlayerType):
         # get the TrueSkillRating objects for everyone
         winning_brawlers_ratings = [self.get_trueskill(brawler) for brawler in winning_brawlers]
         losing_brawlers_ratings = [self.get_trueskill(brawler) for brawler in losing_brawlers]
@@ -146,10 +145,10 @@ class BrawlerRatingsManager:
                                              player_type)
 
         for rating in winning_brawlers_ratings:
-            await rating.update_ratings_to_db(mode_name, map_name)
+            rating.update_ratings_to_db(mode_name, map_name)
 
         for rating in losing_brawlers_ratings:
-            await rating.update_ratings_to_db(mode_name, map_name)
+            rating.update_ratings_to_db(mode_name, map_name)
 
     @staticmethod
     def update_ratings(winners_ratings, losers_ratings, player_type: PlayerType):

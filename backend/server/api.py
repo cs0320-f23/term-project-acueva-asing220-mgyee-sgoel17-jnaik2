@@ -1,7 +1,11 @@
+import asyncio
+
 from flask import Flask, request
 from flask_cors import CORS
 from brawlstars_api import endpoints as api
 from server_state import ServerState
+
+import asyncio as aio
 
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})
@@ -9,7 +13,7 @@ CORS(app, resources={r"/*": {"origins": "*"}})
 
 @app.route('/getPlayerBattleLog')
 def get_player_battle_log():
-    player_tag = request.args.get('player_tag')
+    player_tag = request.args.get('playerTag')
     if not player_tag:
         return {
             "status": "error",
@@ -31,7 +35,7 @@ def get_player_battle_log():
 
 @app.route('/getPlayerInventory')
 def get_player_inventory():
-    player_tag = request.args.get('player_tag')
+    player_tag = request.args.get('playerTag')
     if not player_tag:
         return {
             "status": "error",
@@ -68,7 +72,7 @@ def get_top_global_players():
 
 @app.route('/getTopGlobalPlayersByBrawler')
 def get_top_global_players_by_brawler():
-    brawler_name = request.args.get('brawler_name')
+    brawler_name = request.args.get('brawlerName')
     if not brawler_name:
         return {
             "status": "error",
@@ -105,8 +109,8 @@ def get_map_rotation():
 
 
 @app.route('/getBrawlerRating')
-async def get_brawler_rating():
-    brawler_name = request.args.get('brawler_name')
+def get_brawler_rating():
+    brawler_name = request.args.get('brawlerName')
 
     if not serverState.brawler_name_store.check_if_brawler_exists(brawler_name):
         return {
@@ -114,10 +118,11 @@ async def get_brawler_rating():
             "message": "Invalid brawler name!"
         }, 400
 
-    trueskill = await serverState.brawler_rating_manager.get_trueskill(brawler_name)
+    trueskill = serverState.brawler_rating_manager.get_trueskill(brawler_name)
+
     return {
         "status": "success",
-        "data": trueskill.to_dict()
+        "data": trueskill.convert_to_api_data()
     }, 200
 
 
