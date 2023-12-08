@@ -74,8 +74,8 @@ def get_top_global_players_by_brawler():
             "status": "error",
             "message": "No brawler id provided"
         }, 400
-    
-    brawler_id = serverState.get_brawler_id_from_name(brawler_name)
+
+    brawler_id = serverState.brawler_name_store.get_brawler_id_from_name(brawler_name)
     response = api.get_top_global_players_by_brawler(brawler_id)
     if response.is_error():
         return {
