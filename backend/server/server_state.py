@@ -1,7 +1,7 @@
 import os
 from firebase_setup import initialize_firebase
 from backend.server.brawlstars_api.endpoints import populate_brawler_data
-from trueskill_utils import BrawlerTrueSkill, PlayerType
+from trueskill_utils import BrawlerTrueSkill, TrueSkillRating, PlayerType
 
 from trueskill import rate
 
@@ -30,6 +30,9 @@ class BrawlerNameStore:
         else:
             print("Successfully populated brawler data.")
             self.brawler_id_to_name = {v: k for k, v in self.brawler_name_to_id.items()}
+
+    def check_if_brawler_exists(self, brawler_name):
+        return brawler_name.upper() in self.brawler_name_to_id
 
     def get_brawler_id_from_name(self, brawler_name):
         return self.brawler_name_to_id[brawler_name.upper()]

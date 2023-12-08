@@ -7,6 +7,24 @@ DEFAULT_MU = 25
 DEFAULT_SIGMA = 25 / 3
 
 
+class TrueSkillRating:
+    def __init__(self, pro_rating=None, pro_player_battle_count=None, user_rating=None, user_battle_count=None,
+                 combined_rating=None):
+        self.pro_rating = Rating(DEFAULT_MU, DEFAULT_SIGMA) if pro_rating is None else pro_rating
+        self.pro_player_battle_count = 0 if pro_player_battle_count is None else pro_player_battle_count
+
+        if pro_player_battle_count and not pro_rating or pro_rating and not pro_player_battle_count:
+            raise Exception("pro_rating and pro_player_battle_count must both be None or both be not None")
+
+        self.user_rating = Rating(DEFAULT_MU, DEFAULT_SIGMA) if user_rating is None else user_rating
+        self.user_battle_count = 0 if user_battle_count is None else user_battle_count
+
+        if user_battle_count and not user_rating or user_rating and not user_battle_count:
+            raise Exception("user_rating and user_battle_count must both be None or both be not None")
+
+        self.combined_rating = Rating(DEFAULT_MU, DEFAULT_SIGMA) if combined_rating is None else combined_rating
+
+
 # TODO: add rating history
 # noinspection PyUnresolvedReferences
 class BrawlerTrueSkill:
@@ -121,7 +139,7 @@ class BrawlerTrueSkill:
                     await BrawlerTrueSkill.get_rating_from_doc(map_rating_doc_ref, map_rating_doc)
 
     @staticmethod
-    def get_rating_from_doc(document_ref, document):
+    async def get_rating_from_doc(document_ref, document):
         if not document.exists:
             rating = TrueSkillRating()
             await BrawlerTrueSkill.set_rating_to_doc(document_ref, rating)
@@ -137,7 +155,7 @@ class BrawlerTrueSkill:
             )
 
     @staticmethod
-    def set_rating_to_doc(document_ref, rating: TrueSkillRating):
+    async def set_rating_to_doc(document_ref, rating: TrueSkillRating):
         await document_ref.set({
             PRO_PLAYER_MU_KEY: rating.pro_rating.mu,
             PRO_PLAYER_SIGMA_KEY: rating.pro_rating.sigma,
@@ -148,24 +166,6 @@ class BrawlerTrueSkill:
             COMBINED_MU_KEY: rating.combined_rating.mu,
             COMBINED_SIGMA_KEY: rating.combined_rating.sigma
         })
-
-
-class TrueSkillRating:
-    def __init__(self, pro_rating=None, pro_player_battle_count=None, user_rating=None, user_battle_count=None,
-                 combined_rating=None):
-        self.pro_rating = Rating(DEFAULT_MU, DEFAULT_SIGMA) if pro_rating is None else pro_rating
-        self.pro_player_battle_count = 0 if pro_player_battle_count is None else pro_player_battle_count
-
-        if pro_player_battle_count and not pro_rating or pro_rating and not pro_player_battle_count:
-            raise Exception("pro_rating and pro_player_battle_count must both be None or both be not None")
-
-        self.user_rating = Rating(DEFAULT_MU, DEFAULT_SIGMA) if user_rating is None else user_rating
-        self.user_battle_count = 0 if user_battle_count is None else user_battle_count
-
-        if user_battle_count and not user_rating or user_rating and not user_battle_count:
-            raise Exception("user_rating and user_battle_count must both be None or both be not None")
-
-        self.combined_rating = Rating(DEFAULT_MU, DEFAULT_SIGMA) if combined_rating is None else combined_rating
 
 
 class PlayerType(Enum):

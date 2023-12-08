@@ -136,7 +136,7 @@ def populate_brawler_data(brawler_id_dict) -> BSAPIResponse:
         response.raise_for_status()
         data = response.json()
         for brawler in data['items']:
-            brawler_id_dict[brawler['name']] = brawler['id']
+            brawler_id_dict[brawler['name'].upper()] = brawler['id']
         return BSAPIResponse(BSAPIResponseType.SUCCESS, "", None)
     except requests.HTTPError as http_err:
         return BSAPIResponse(BSAPIResponseType.HTTP_ERROR, f'Error occurred: {http_err}', None)

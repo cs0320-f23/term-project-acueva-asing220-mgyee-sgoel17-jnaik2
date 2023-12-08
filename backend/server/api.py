@@ -104,6 +104,34 @@ def get_map_rotation():
         }, 200
 
 
+@app.route('/getBrawlerRating')
+async def get_brawler_rating():
+    brawler_name = request.args.get('brawler_name')
+
+    if not serverState.brawler_name_store.check_if_brawler_exists(brawler_name):
+        return {
+            "status": "error",
+            "message": "Invalid brawler name!"
+        }, 400
+
+    trueskill = await serverState.brawler_rating_manager.get_trueskill(brawler_name)
+    return {
+        "status": "success",
+        "data": trueskill.to_dict()
+    }, 200
+
+
+@app.route('/getAllBrawlers')
+def get_all_brawlers():
+    brawler_name_to_id_dict = serverState.brawler_name_store.brawler_name_to_id
+    data = [(k, v) for k, v in brawler_name_to_id_dict.items()]
+
+    return {
+        "status": "success",
+        "data": data
+    }, 200
+
+
 if __name__ == '__main__':
     serverState = ServerState()
     app.run(host='localhost', port=8000, debug=True)
