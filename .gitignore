@@ -3,8 +3,9 @@ backend/server/private/
 
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# API KEYS ---- NAME OF FILE MUST BE KEYS.PY
+# API KEYS ---- NAME OF FILE MUST BE EITHER KEYS, OR END IN KEYS.JSON
 **/keys*
+**/*keys.json
 
 # PyCharm
 .idea/

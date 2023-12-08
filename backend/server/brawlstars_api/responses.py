@@ -2,9 +2,9 @@ from enum import Enum
 
 
 class BSAPIResponseType(Enum):
-    SUCCESS = 0
-    HTTP_ERROR = 1
-    OTHER_ERROR = 2
+    SUCCESS = "success"
+    HTTP_ERROR = "http_error"
+    OTHER_ERROR = "other_error"
 
 
 class BSAPIResponse:
