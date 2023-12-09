@@ -4,6 +4,8 @@ from trueskill import Rating
 from db_constants import *
 from api_constants import *
 
+from collections import defaultdict
+
 DEFAULT_MU = 25
 DEFAULT_SIGMA = 25 / 3
 
@@ -40,6 +42,12 @@ class TrueSkillRating:
         }
 
 
+class FactoryDefaultDict(defaultdict):
+    def __missing__(self, key):
+        self[key] = new = self.default_factory()
+        return new
+
+
 # TODO: add rating history
 # noinspection PyUnresolvedReferences
 class BrawlerTrueSkill:
@@ -47,8 +55,8 @@ class BrawlerTrueSkill:
         self.__db = db
         self.__brawler_name = brawler_name
         self.global_rating = None
-        self.mode_ratings = {}  # SCHEMA: mode_name : TrueSkillRating
-        self.map_ratings = {}  # SCHEMA: (mode_name, map_name) : TrueSkillRating
+        self.mode_ratings = FactoryDefaultDict(TrueSkillRating)  # SCHEMA: mode_name : TrueSkillRating
+        self.map_ratings = FactoryDefaultDict(TrueSkillRating)  # SCHEMA: (mode_name, map_name) : TrueSkillRating
 
     def convert_to_api_data(self):
         data = {API_BRAWLER_NAME_KEY: self.__brawler_name,
@@ -62,6 +70,7 @@ class BrawlerTrueSkill:
 
         map_data = {}
         for (mode_name, map_name), map_rating in self.map_ratings.items():
+            map_data[mode_name] = {}
             map_data[mode_name][map_name] = map_rating.convert_to_api_data()
 
         data[API_MAP_RATINGS_KEY] = map_data
@@ -82,7 +91,7 @@ class BrawlerTrueSkill:
 
         BrawlerTrueSkill.set_rating_to_doc(global_rating_doc_ref, self.global_rating)
 
-    def update_mode_rating_to_db(self, mode):
+    def update_mode_ratings_to_db(self, mode):
         mode_rating_doc_ref = self.__db \
             .collection(TOP_LEVEL_COLLECTION) \
             .document(MODE_RATING_DOCUMENT) \
@@ -93,7 +102,7 @@ class BrawlerTrueSkill:
 
         BrawlerTrueSkill.set_rating_to_doc(mode_rating_doc_ref, self.mode_ratings[mode])
 
-    def update_map_rating_to_db(self, mode, battle_map):
+    def update_map_ratings_to_db(self, mode, battle_map):
         map_rating_doc_ref = self.__db \
             .collection(TOP_LEVEL_COLLECTION) \
             .document(MAP_RATING_DOCUMENT) \

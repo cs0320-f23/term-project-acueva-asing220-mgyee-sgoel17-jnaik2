@@ -15,3 +15,8 @@ API_APP_USER_BATTLE_COUNT_KEY = 'app-user-n'
 
 API_COMBINED_RATING_MU_KEY = 'combined-mu'
 API_COMBINED_RATING_SIGMA_KEY = 'combined-sigma'
+
+# api operation constants
+BS_RESULT_LOSS = "defeat"
+BS_RESULT_WIN = "victory"
+BS_RESULT_DRAW = "draw"
