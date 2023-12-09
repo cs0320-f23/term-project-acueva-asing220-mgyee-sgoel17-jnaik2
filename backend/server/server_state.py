@@ -68,10 +68,10 @@ class BattleHashStore:
         return battle_time[:11]
 
     def load_battles_from_disk(self, battle_time):
-        if battle_time in self.loaded_times:
-            return
-
         battle_time_at_hour = BattleHashStore.get_battle_time_at_hour(battle_time)
+
+        if battle_time_at_hour in self.loaded_times:
+            return
 
         current_dir_contents = os.listdir()
         if BATTLE_HASHES_LOCATION in current_dir_contents:
