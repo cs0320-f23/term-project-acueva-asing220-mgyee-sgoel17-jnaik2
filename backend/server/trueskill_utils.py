@@ -12,7 +12,7 @@ DEFAULT_SIGMA = 25 / 3
 
 class TrueSkillRating:
     def __init__(self, pro_rating: Rating = None, pro_player_battle_count: int = None, user_rating: Rating = None,
-                 user_battle_count: int = None, combined_rating: Rating = None):
+                 user_battle_count: int = None, combined_rating: Rating = None, from_database=False):
         self.pro_rating = Rating(DEFAULT_MU, DEFAULT_SIGMA) if pro_rating is None else pro_rating
         self.pro_player_battle_count = 0 if pro_player_battle_count is None else pro_player_battle_count
 
@@ -28,6 +28,7 @@ class TrueSkillRating:
             raise Exception("user_rating and user_battle_count must both be None or both be not None")
 
         self.combined_rating = Rating(DEFAULT_MU, DEFAULT_SIGMA) if combined_rating is None else combined_rating
+        self.from_database = from_database
 
     def convert_to_api_data(self):
         return {
@@ -93,19 +94,25 @@ class BrawlerTrueSkill:
         # to remove apostrophes in map names
         battle_map = battle_map.replace("'", "")
 
-        if self.mode_ratings.get(mode) is None:
-            self.mode_ratings[mode] = TrueSkillRating()
-            self.insert_rating_to_db_rows(self.mode_ratings[mode], RatingType.MODE, mode_name=mode)
+        if not self.global_rating.from_database:
+            self.insert_rating_to_db_rows(self.global_rating, RatingType.GLOBAL)
+            self.global_rating.from_database = True
+        else:
+            self.update_rating_to_db_rows(self.global_rating, RatingType.GLOBAL)
 
-        if self.map_ratings.get((mode, battle_map)) is None:
-            self.map_ratings[(mode, battle_map)] = TrueSkillRating()
+        if not self.mode_ratings[mode].from_database:
+            self.insert_rating_to_db_rows(self.mode_ratings[mode], RatingType.MODE, mode_name=mode)
+            self.mode_ratings[mode].from_database = True
+        else:
+            self.update_rating_to_db_rows(self.mode_ratings[mode], RatingType.MODE, mode_name=mode)
+
+        if not self.map_ratings[(mode, battle_map)].from_database:
             self.insert_rating_to_db_rows(self.map_ratings[(mode, battle_map)], RatingType.MAP, mode_name=mode,
                                           map_name=battle_map)
-
-        self.update_rating_to_db_rows(self.global_rating, RatingType.GLOBAL)
-        self.update_rating_to_db_rows(self.mode_ratings[mode], RatingType.MODE, mode_name=mode)
-        self.update_rating_to_db_rows(self.map_ratings[(mode, battle_map)], RatingType.MAP, mode_name=mode,
-                                      map_name=battle_map)
+            self.map_ratings[(mode, battle_map)].from_database = True
+        else:
+            self.update_rating_to_db_rows(self.map_ratings[(mode, battle_map)], RatingType.MAP, mode_name=mode,
+                                          map_name=battle_map)
 
     def populate_ratings(self):
         self.populate_global_rating()
@@ -124,6 +131,7 @@ class BrawlerTrueSkill:
             # map ratings are more specific
             self.global_rating = TrueSkillRating()
             self.insert_rating_to_db_rows(self.global_rating, RatingType.GLOBAL)
+            self.global_rating.from_database = True
         elif len(rows) == 1:
             self.global_rating = BrawlerTrueSkill.get_rating_from_db_row(rows[0], rows_desc)
         else:
@@ -159,7 +167,8 @@ class BrawlerTrueSkill:
             row[row_description[PRO_PLAYER_BATTLE_COUNT_KEY]],
             Rating(row[row_description[USER_MU_KEY]], row[row_description[USER_SIGMA_KEY]]),
             row[row_description[USER_BATTLE_COUNT_KEY]],
-            Rating(row[row_description[COMBINED_MU_KEY]], row[row_description[COMBINED_SIGMA_KEY]])
+            Rating(row[row_description[COMBINED_MU_KEY]], row[row_description[COMBINED_SIGMA_KEY]]),
+            True
         )
 
     def insert_rating_to_db_rows(self, rating: TrueSkillRating, rating_type: RatingType, mode_name=None, map_name=None):

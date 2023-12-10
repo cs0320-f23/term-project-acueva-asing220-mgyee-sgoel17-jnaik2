@@ -216,8 +216,8 @@ def update_brawler_ratings_from_pro_play():
                 battle_time = BattleHashStore.get_battle_time(battle_log)
                 server_state.battle_hash_store.add_battle(battle_hash, battle_time)
 
-                battle_players_team = [player["brawler"]["name"] for player in battle_log["battle"]["teams"][0]]
-                battle_opponents_team = [player["brawler"]["name"] for player in battle_log["battle"]["teams"][1]]
+                battle_players_team = [player["brawler"]["name"].upper() for player in battle_log["battle"]["teams"][0]]
+                battle_opponents_team = [player["brawler"]["name"].upper() for player in battle_log["battle"]["teams"][1]]
 
                 battle_result = battle_log["battle"]["result"]
 
