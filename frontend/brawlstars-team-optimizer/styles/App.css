@@ -20,6 +20,7 @@
 .brawlerCardTable {
   overflow: auto;
   height: 350px;
+  margin-top: 10%;
 }
 
 .checkBox {
@@ -43,6 +44,12 @@
 }
 
 .inputField {
+  width: 100%;
+}
+
+.teamCell {
+  display: flex;
+  justify-content: space-evenly;
   width: 100%;
 }
 

@@ -12,8 +12,8 @@ const checkedIcon = <CheckBoxIcon fontSize="small" />;
 
 interface checkBoxesProps {
   currentBrawlers: [string, string][];
-  brawlersOwned: Set<string>; //names
-  preferredBrawlers: Set<string>; //names
+  brawlersOwned: Set<string>;
+  preferredBrawlers: Set<string>;
   setPreferredBrawlers: React.Dispatch<React.SetStateAction<Set<string>>>;
 }
 
@@ -27,17 +27,25 @@ export default function DropDownCheckboxesTags(boxProps: checkBoxesProps) {
       return map;
     });
   }
-  console.log("lkjdfkljd;asjfldaskjf");
+  // const listBoxStyle = {
+  //   "&:MuiAutocomplete-listbox": {
+  //     height: 50px,
+  //   overflow: auto,
+
+  //   }
+  // }
 
   useEffect(() => {
     setAllBrawlers(tuplesToDictionaries(boxProps.currentBrawlers));
   }, [boxProps.currentBrawlers]);
+
   return (
     <Autocomplete
       multiple
       id="checkboxes-tags-demo"
       options={allBrawlers}
       disableCloseOnSelect
+      // sx={listBoxStyle}
       getOptionLabel={(option) => {
         const brawlerName = option.get("Brawler Name");
         return brawlerName ? brawlerName : "Unknown";
@@ -66,14 +74,14 @@ export default function DropDownCheckboxesTags(boxProps: checkBoxesProps) {
           value.map((brawlerNameIDMap) => {
             const brawlerName = brawlerNameIDMap.get("Brawler Name");
             if (brawlerName) {
-                preferences.add(brawlerName);
+              preferences.add(brawlerName);
             }
           });
+          console.log(preferences);
           boxProps.setPreferredBrawlers(preferences);
         } else {
-            boxProps.setPreferredBrawlers(new Set<string>());
+          boxProps.setPreferredBrawlers(new Set<string>());
         }
-        console.log(boxProps.preferredBrawlers);
       }}
     />
   );

@@ -8,6 +8,7 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import TeamCell from "@/components/TeamIcon";
+import "@/styles/App.css";
 
 // function createData(team: string, winrate: number, trueskill: number) {
 //   return { team, winrate, trueskill };
@@ -182,14 +183,11 @@ export default function BasicTable() {
               <StyledTableCell align="center">{row.trueSkill}</StyledTableCell> */}
 
               <StyledTableCell align="center">
-                <TeamCell teamName={row.teamName1} teamIcon={row.teamIcon1} />
-                <br />
-                <TeamCell
-                  teamName={row.teamName2}
-                  teamIcon={row.teamIcon2}
-                />{" "}
-                <br />
-                <TeamCell teamName={row.teamName3} teamIcon={row.teamIcon3} />
+                <div className="teamCell">
+                  <TeamCell teamName={row.teamName1} teamIcon={row.teamIcon1} />{" "}
+                  <TeamCell teamName={row.teamName2} teamIcon={row.teamIcon2} />{" "}
+                  <TeamCell teamName={row.teamName3} teamIcon={row.teamIcon3} />
+                </div>
               </StyledTableCell>
               <StyledTableCell align="center">{row.winRate}</StyledTableCell>
               <StyledTableCell align="center">{row.trueSkill}</StyledTableCell>

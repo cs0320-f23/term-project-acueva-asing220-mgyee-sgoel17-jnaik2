@@ -73,36 +73,20 @@ export default function TeamOpt3v3() {
   const player3 = usePlayerState(3);
 
   async function getCurrentBrawlers(): Promise<[string, string][]> {
-    const fetchJson = await fetch("http://localhost:8000/populateBrawlerData");
+    const fetchJson = await fetch("http://localhost:8000/getAllBrawlers");
     const currentBrawlers = await fetchJson.json();
     if (currentBrawlers) {
-      return currentBrawlers.map((brawlerNameIDPair: [string, number]) => {
-        return [brawlerNameIDPair[0], brawlerNameIDPair[1].toString()];
-      });
+      if (currentBrawlers.status === "success") {
+        return currentBrawlers.data.map(
+          (brawlerNameIDPair: [string, number]) => {
+            return [brawlerNameIDPair[0], brawlerNameIDPair[1].toString()];
+          }
+        );
+      }
+      setErrorBanner(Error.API_ERROR);
     }
     setErrorBanner(Error.API_ERROR);
-    return [["real", "real"]];
-
-    // let brawlerIDPair: [string, string] = ["temp", "temp"];
-    // let allPairs: [string, string][] = [];
-    // if (!currentBrawlers) {
-    //   setErrorBanner(Error.NO_JSON_ERROR);
-    //   return [["noJson", "noJson"]]; //Do error checking, maybe display a banner?
-    // }
-    // if (!currentBrawlers.items) {
-    //   setErrorBanner(Error.API_ERROR);
-    //   return [["typeError", "typeError"]]; //Do error checking, maybe display a banner?
-    // }
-
-    // for (let i = 0; i < currentBrawlers.items.length; i++) {
-    //   brawlerIDPair = [
-    //     String(currentBrawlers.items[i].id),
-    //     currentBrawlers.items[i].name,
-    //   ];
-    //   console.log(brawlerIDPair);
-    //   allPairs.push(brawlerIDPair);
-    // }
-    // return allPairs;
+    return [["Invalid", "Invalid"]];
   }
 
   async function checkValidity() {
@@ -115,9 +99,7 @@ export default function TeamOpt3v3() {
   function tagOrderChecker() {
     if (player1.tag === "" && (player2.tag !== "" || player3.tag !== "")) {
       setErrorBanner(Error.WRONG_ORDER_ERROR);
-    }
-
-    if (player1.tag !== "" && player2.tag === "" && player3.tag !== "") {
+    } else if (player1.tag !== "" && player2.tag === "" && player3.tag !== "") {
       setErrorBanner(Error.WRONG_ORDER_ERROR);
     } else {
       setErrorBanner(Error.NO_ERROR);
@@ -127,7 +109,7 @@ export default function TeamOpt3v3() {
   // TODO, ensure that the banner is what we want!
   async function checkAllTags() {
     if (player1.tag === "") {
-      setErrorBanner(Error.NO_TAG_ERROR);
+      // setErrorBanner(Error.NO_TAG_ERROR);
       return;
     }
 
@@ -276,8 +258,8 @@ export default function TeamOpt3v3() {
         <ReactTable />
       </div>
 
-      {/* <button
-        tabIndex={5}
+      <button
+        tabIndex={9}
         id="button"
         onClick={() => {
           console.log("bad click");
@@ -287,7 +269,7 @@ export default function TeamOpt3v3() {
         Alternatively, press the Enter key to submit."
       >
         Find your best brawlers
-      </button> */}
+      </button>
     </div>
   );
 }
@@ -297,12 +279,17 @@ async function checkPlayerTag(player: Player) {
   let tagJson;
   let tagData;
   tagJson = await fetch(
-    "http://localhost:8000/getPlayerData?player_tag=" + player.tag
+    "http://localhost:8000/getPlayerInventory?player_tag=" + player.tag
   );
   tagData = await tagJson.json();
   if (tagData) {
     console.log(tagData);
-    if (tagData.reason) {
+    if (tagData.status === "success") {
+      console.log("FIRST CHECKPOINT");
+      player.setIsValid(true);
+      await updateBrawlersOwned(player, tagData.data.brawlers);
+      return true;
+    } else {
       let tag = player.tag;
       let helperText = player.helperText;
 
@@ -312,13 +299,8 @@ async function checkPlayerTag(player: Player) {
         player.setTag(tag);
         player.setHelperText(helperText);
       }, 3000);
-      console.log("FIRST CHECKPOINT");
-      return false;
-    } else {
       console.log("SECOND CHECKPOINT");
-      player.setIsValid(true);
-      await updateBrawlersOwned(player, tagData);
-      return true;
+      return false;
     }
   }
   return false;
@@ -326,9 +308,8 @@ async function checkPlayerTag(player: Player) {
 
 async function updateBrawlersOwned(player: Player, rawBrawlerData: any) {
   if (rawBrawlerData) {
-    if (rawBrawlerData.brawlers && rawBrawlerData.brawlers[0]) {
-      // ensure you can see at least one brawler
-      rawBrawlerData.brawlers.map((brawler: any) => {
+    if (rawBrawlerData[0]) {
+      rawBrawlerData.map((brawler: any) => {
         player.setBrawlersOwned(player.brawlersOwned.add(brawler.name));
       });
     }
@@ -353,7 +334,7 @@ function errorToBannerText(error: Error) {
   } else if (error == Error.SAME_TAG_ERROR) {
     return "Each Player must have a unique tag";
   } else if (error == Error.WRONG_ORDER_ERROR) {
-    return "Please enter player ID's in this order: Player 1, Player 2, and Player 3.";
+    return "If you enter a player ID, please enter them in this order: Player 1, Player 2, and Player 3";
   } else if (error == Error.NO_TAG_ERROR) {
     return "Please enter a tag for the player";
   }
