@@ -11,13 +11,12 @@ DEFAULT_SIGMA = 25 / 3
 
 
 class TrueSkillRating:
-    def __init__(self, brawler_name, pro_rating=None, pro_player_battle_count=None, user_rating=None,
-                 user_battle_count=None, combined_rating=None):
-        self.brawler_name = brawler_name
+    def __init__(self, pro_rating: Rating = None, pro_player_battle_count: int = None, user_rating: Rating = None,
+                 user_battle_count: int = None, combined_rating: Rating = None):
         self.pro_rating = Rating(DEFAULT_MU, DEFAULT_SIGMA) if pro_rating is None else pro_rating
         self.pro_player_battle_count = 0 if pro_player_battle_count is None else pro_player_battle_count
 
-        if (pro_player_battle_count is not None and pro_rating is None) or\
+        if (pro_player_battle_count is not None and pro_rating is None) or \
                 (pro_rating is not None and pro_player_battle_count is None):
             raise Exception("pro_rating and pro_player_battle_count must both be None or both be not None")
 
@@ -32,7 +31,6 @@ class TrueSkillRating:
 
     def convert_to_api_data(self):
         return {
-            API_BRAWLER_NAME_KEY: self.brawler_name,
             API_PRO_PLAYER_RATING_MU_KEY: self.pro_rating.mu,
             API_PRO_PLAYER_RATING_SIGMA_KEY: self.pro_rating.sigma,
             API_PRO_PLAYER_BATTLE_COUNT_KEY: self.pro_player_battle_count,
@@ -42,6 +40,17 @@ class TrueSkillRating:
             API_COMBINED_RATING_MU_KEY: self.combined_rating.mu,
             API_COMBINED_RATING_SIGMA_KEY: self.combined_rating.sigma
         }
+
+
+class PlayerType(Enum):
+    PRO = 0
+    USER = 1
+
+
+class RatingType(Enum):
+    GLOBAL = 0
+    MODE = 1
+    MAP = 2
 
 
 class FactoryDefaultDict(defaultdict):
@@ -81,17 +90,27 @@ class BrawlerTrueSkill:
         return data
 
     def update_ratings_to_db(self, mode, battle_map):
-        BrawlerTrueSkill.update_rating_to_db_rows(self.global_rating, RatingType.GLOBAL)
-        BrawlerTrueSkill.update_rating_to_db_rows(self.mode_ratings[mode], RatingType.MODE, mode_name=mode)
-        BrawlerTrueSkill.update_rating_to_db_rows(self.map_ratings[(mode, battle_map)], RatingType.MAP, mode_name=mode,
-                                                  map_name=battle_map)
+        # to remove apostrophes in map names
+        battle_map = battle_map.replace("'", "")
+
+        if self.mode_ratings.get(mode) is None:
+            self.mode_ratings[mode] = TrueSkillRating()
+            self.insert_rating_to_db_rows(self.mode_ratings[mode], RatingType.MODE, mode_name=mode)
+
+        if self.map_ratings.get((mode, battle_map)) is None:
+            self.map_ratings[(mode, battle_map)] = TrueSkillRating()
+            self.insert_rating_to_db_rows(self.map_ratings[(mode, battle_map)], RatingType.MAP, mode_name=mode,
+                                          map_name=battle_map)
+
+        self.update_rating_to_db_rows(self.global_rating, RatingType.GLOBAL)
+        self.update_rating_to_db_rows(self.mode_ratings[mode], RatingType.MODE, mode_name=mode)
+        self.update_rating_to_db_rows(self.map_ratings[(mode, battle_map)], RatingType.MAP, mode_name=mode,
+                                      map_name=battle_map)
 
     def populate_ratings(self):
         self.populate_global_rating()
         self.populate_mode_ratings()
         self.populate_map_ratings()
-
-        self.ratings_sanity_check()
 
     def populate_global_rating(self):
         self.__cursor.execute(f"SELECT * FROM {SCHEMA_NAME}.\"{GLOBAL_RATING_TABLE}\" WHERE \"{BRAWLER_NAME_KEY}\" "
@@ -103,8 +122,8 @@ class BrawlerTrueSkill:
         if len(rows) == 0:
             # we can just insert a rating here now, if it doesn't exist, because you always need a global rating
             # map ratings are more specific
-            self.global_rating = TrueSkillRating(self.__brawler_name)
-            BrawlerTrueSkill.insert_rating_to_db_rows(self.global_rating, RatingType.GLOBAL)
+            self.global_rating = TrueSkillRating()
+            self.insert_rating_to_db_rows(self.global_rating, RatingType.GLOBAL)
         elif len(rows) == 1:
             self.global_rating = BrawlerTrueSkill.get_rating_from_db_row(rows[0], rows_desc)
         else:
@@ -133,22 +152,9 @@ class BrawlerTrueSkill:
             map_name = row[rows_desc[MAP_NAME_KEY]]
             self.mode_ratings[(mode_name, map_name)] = BrawlerTrueSkill.get_rating_from_db_row(row, rows_desc)
 
-    def ratings_sanity_check(self):
-        if self.global_rating is None or self.global_rating.brawler_name != self.__brawler_name:
-            raise Exception("Global rating is None or brawler name is incorrect")
-
-        for mode_name, mode_rating in self.mode_ratings.items():
-            if mode_rating is None or mode_rating.brawler_name != self.__brawler_name:
-                raise Exception(f"Mode rating for {mode_name} is None or brawler name is incorrect")
-
-        for (mode_name, map_name), map_rating in self.map_ratings.items():
-            if map_rating is None or map_rating.brawler_name != self.__brawler_name:
-                raise Exception(f"Map rating for {mode_name} on {map_name} is None or brawler name is incorrect")
-
     @staticmethod
     def get_rating_from_db_row(row, row_description: dict):
         return TrueSkillRating(
-            row[row_description[BRAWLER_NAME_KEY]],
             Rating(row[row_description[PRO_PLAYER_MU_KEY]], row[row_description[PRO_PLAYER_SIGMA_KEY]]),
             row[row_description[PRO_PLAYER_BATTLE_COUNT_KEY]],
             Rating(row[row_description[USER_MU_KEY]], row[row_description[USER_SIGMA_KEY]]),
@@ -156,8 +162,7 @@ class BrawlerTrueSkill:
             Rating(row[row_description[COMBINED_MU_KEY]], row[row_description[COMBINED_SIGMA_KEY]])
         )
 
-    @staticmethod
-    def insert_rating_to_db_rows(rating: TrueSkillRating, rating_type: RatingType, mode_name=None, map_name=None):
+    def insert_rating_to_db_rows(self, rating: TrueSkillRating, rating_type: RatingType, mode_name=None, map_name=None):
         if rating_type == RatingType.GLOBAL:
             self.__cursor.execute(f"INSERT INTO {SCHEMA_NAME}.\"{GLOBAL_RATING_TABLE}\" "
                                   f"("
@@ -167,8 +172,9 @@ class BrawlerTrueSkill:
                                   f") "
                                   f"VALUES "
                                   f"("
-                                  f"\'{rating.brawler_name}\', {rating.pro_rating.mu}, {rating.pro_rating.sigma}, "
-                                  f"{rating.pro_player_battle_count}, {rating.user_rating.mu}, {rating.user_rating.sigma}, "
+                                  f"\'{self.__brawler_name}\', {rating.pro_rating.mu}, {rating.pro_rating.sigma}, "
+                                  f"{rating.pro_player_battle_count}, {rating.user_rating.mu}, "
+                                  f"{rating.user_rating.sigma}, "
                                   f"{rating.user_battle_count}, {rating.combined_rating.mu}, "
                                   f"{rating.combined_rating.sigma}"
                                   f");")
@@ -176,7 +182,7 @@ class BrawlerTrueSkill:
             if mode_name is None:
                 raise Exception("mode_name must be provided for mode rating")
 
-            self.__cursor.execute(f"INSERT INTO {SCHEMA_NAME}.\"{GLOBAL_RATING_TABLE}\" "
+            self.__cursor.execute(f"INSERT INTO {SCHEMA_NAME}.\"{MODE_RATING_TABLE}\" "
                                   f"("
                                   f"\"{BRAWLER_NAME_KEY}\", \"{PRO_PLAYER_MU_KEY}\", \"{PRO_PLAYER_SIGMA_KEY}\", "
                                   f"\"{PRO_PLAYER_BATTLE_COUNT_KEY}\", \"{USER_MU_KEY}\", \"{USER_SIGMA_KEY}\", "
@@ -185,8 +191,9 @@ class BrawlerTrueSkill:
                                   f") "
                                   f"VALUES "
                                   f"("
-                                  f"\'{rating.brawler_name}\', {rating.pro_rating.mu}, {rating.pro_rating.sigma}, "
-                                  f"{rating.pro_player_battle_count}, {rating.user_rating.mu}, {rating.user_rating.sigma}, "
+                                  f"\'{self.__brawler_name}\', {rating.pro_rating.mu}, {rating.pro_rating.sigma}, "
+                                  f"{rating.pro_player_battle_count}, {rating.user_rating.mu}, "
+                                  f"{rating.user_rating.sigma}, "
                                   f"{rating.user_battle_count}, {rating.combined_rating.mu}, "
                                   f"{rating.combined_rating.sigma}, \'{mode_name}\'"
                                   f");")
@@ -194,7 +201,7 @@ class BrawlerTrueSkill:
             if mode_name is None or map_name is None:
                 raise Exception("mode_name and map_name must be provided for map rating")
 
-            self.__cursor.execute(f"INSERT INTO {SCHEMA_NAME}.\"{GLOBAL_RATING_TABLE}\" "
+            self.__cursor.execute(f"INSERT INTO {SCHEMA_NAME}.\"{MAP_RATING_TABLE}\" "
                                   f"("
                                   f"\"{BRAWLER_NAME_KEY}\", \"{PRO_PLAYER_MU_KEY}\", \"{PRO_PLAYER_SIGMA_KEY}\", "
                                   f"\"{PRO_PLAYER_BATTLE_COUNT_KEY}\", \"{USER_MU_KEY}\", \"{USER_SIGMA_KEY}\", "
@@ -203,8 +210,9 @@ class BrawlerTrueSkill:
                                   f") "
                                   f"VALUES "
                                   f"("
-                                  f"\'{rating.brawler_name}\', {rating.pro_rating.mu}, {rating.pro_rating.sigma}, "
-                                  f"{rating.pro_player_battle_count}, {rating.user_rating.mu}, {rating.user_rating.sigma}, "
+                                  f"\'{self.__brawler_name}\', {rating.pro_rating.mu}, {rating.pro_rating.sigma}, "
+                                  f"{rating.pro_player_battle_count}, {rating.user_rating.mu}, "
+                                  f"{rating.user_rating.sigma}, "
                                   f"{rating.user_battle_count}, {rating.combined_rating.mu}, "
                                   f"{rating.combined_rating.sigma}, \'{mode_name}\', \'{map_name}\'"
                                   f");")
@@ -213,8 +221,7 @@ class BrawlerTrueSkill:
 
         self.__conn.commit()
 
-    @staticmethod
-    def update_rating_to_db_rows(rating: TrueSkillRating, rating_type: RatingType, mode_name=None, map_name=None):
+    def update_rating_to_db_rows(self, rating: TrueSkillRating, rating_type: RatingType, mode_name=None, map_name=None):
         if rating_type == RatingType.GLOBAL:
             self.__cursor.execute(f"UPDATE {SCHEMA_NAME}.\"{GLOBAL_RATING_TABLE}\" "
                                   f"SET "
@@ -226,7 +233,7 @@ class BrawlerTrueSkill:
                                   f"\"{USER_BATTLE_COUNT_KEY}\" = {rating.user_battle_count}, "
                                   f"\"{COMBINED_MU_KEY}\" = {rating.combined_rating.mu}, "
                                   f"\"{COMBINED_SIGMA_KEY}\" = {rating.combined_rating.sigma} "
-                                  f"WHERE \"{BRAWLER_NAME_KEY}\" = \'{rating.brawler_name}\';")
+                                  f"WHERE \"{BRAWLER_NAME_KEY}\" = \'{self.__brawler_name}\';")
         elif rating_type == RatingType.MODE:
             if mode_name is None:
                 raise Exception("mode_name must be provided for mode rating")
@@ -242,7 +249,7 @@ class BrawlerTrueSkill:
                                   f"\"{COMBINED_MU_KEY}\" = {rating.combined_rating.mu}, "
                                   f"\"{COMBINED_SIGMA_KEY}\" = {rating.combined_rating.sigma} "
                                   f"WHERE "
-                                  f"\"{BRAWLER_NAME_KEY}\" = \'{rating.brawler_name}\' AND"
+                                  f"\"{BRAWLER_NAME_KEY}\" = \'{self.__brawler_name}\' AND"
                                   f"\"{MODE_NAME_KEY}\" = \'{mode_name}\';")
         elif rating_type == RatingType.MAP:
             if mode_name is None or map_name is None:
@@ -259,7 +266,7 @@ class BrawlerTrueSkill:
                                   f"\"{COMBINED_MU_KEY}\" = {rating.combined_rating.mu}, "
                                   f"\"{COMBINED_SIGMA_KEY}\" = {rating.combined_rating.sigma} "
                                   f"WHERE "
-                                  f"\"{BRAWLER_NAME_KEY}\" = \'{rating.brawler_name}\' AND"
+                                  f"\"{BRAWLER_NAME_KEY}\" = \'{self.__brawler_name}\' AND"
                                   f"\"{MODE_NAME_KEY}\" = \'{mode_name}\' AND"
                                   f"\"{MAP_NAME_KEY}\" = \'{map_name}\';")
 
@@ -267,14 +274,3 @@ class BrawlerTrueSkill:
             raise Exception(f"Invalid rating type: {rating_type}")
 
         self.__conn.commit()
-
-
-class PlayerType(Enum):
-    PRO = 0
-    USER = 1
-
-
-class RatingType(Enum):
-    GLOBAL = 0
-    MODE = 1
-    MAP = 2

@@ -1,4 +1,3 @@
-import traceback
 from datetime import datetime
 
 from flask import Flask, request
@@ -203,15 +202,16 @@ def update_brawler_ratings_from_pro_play():
         battle_logs = response.data["items"]
         print(f"CRON | STATUS battle logs to process: {len(battle_logs)}")
         for battle_log in battle_logs:
-            if "showdown" in battle_log["battle"]["mode"].lower():
-                continue
-
-            battle_hash = BattleHashStore.get_battle_hash(battle_log)
-            if battle_hash in server_state.battle_hash_store.battle_hashes:
-                print(f"CRON | STATUS battle hash ({battle_hash}) already processed")
-                continue
-
+            battle_hash = None
             try:
+                if "showdown" in battle_log["battle"]["mode"].lower():
+                    continue
+
+                battle_hash = BattleHashStore.get_battle_hash(battle_log)
+                if battle_hash in server_state.battle_hash_store.battle_hashes:
+                    print(f"CRON | STATUS battle hash ({battle_hash}) already processed")
+                    continue
+
                 # register in hash
                 battle_time = BattleHashStore.get_battle_time(battle_log)
                 server_state.battle_hash_store.add_battle(battle_hash, battle_time)
@@ -251,6 +251,7 @@ def update_brawler_ratings_from_pro_play():
 
 if __name__ == '__main__':
     server_state = ServerState()
-    scheduler.init_app(app)
-    scheduler.start()
-    app.run(host='localhost', port=8000, debug=True)
+    # scheduler.init_app(app)
+    # scheduler.start()
+    # app.run(host='localhost', port=8000, debug=True)
+    update_brawler_ratings_from_pro_play()

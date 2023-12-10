@@ -1,5 +1,5 @@
 import os
-from firebase_setup import initialize_firebase
+from postgres_setup import initialize_postgresql
 from brawlstars_api.endpoints import populate_brawler_data
 from trueskill_utils import BrawlerTrueSkill, PlayerType
 
@@ -12,8 +12,8 @@ class ServerState:
     def __init__(self):
         self.brawler_name_store = BrawlerNameStore()
         self.battle_hash_store = BattleHashStore()
-        self.db = initialize_firebase()
-        self.brawler_rating_manager = BrawlerRatingsManager(self.db)
+        self.cursor, self.conn = initialize_postgresql()
+        self.brawler_rating_manager = BrawlerRatingsManager(self.cursor, self.conn)
 
 
 class BrawlerNameStore:
@@ -41,6 +41,7 @@ class BrawlerNameStore:
         return self.brawler_id_to_name[brawler_id]
 
 
+# TODO: migrate to postgres
 class BattleHashStore:
     def __init__(self):
         self.battle_hashes = {}
@@ -101,8 +102,9 @@ class BattleHashStore:
 
 
 class BrawlerRatingsManager:
-    def __init__(self, db):
-        self.__db = db
+    def __init__(self, cursor, conn):
+        self.__cursor = cursor
+        self.__conn = conn
         self.brawler_name_to_trueskill = {}
 
     def get_trueskill(self, brawler_name) -> BrawlerTrueSkill:
@@ -113,7 +115,7 @@ class BrawlerRatingsManager:
         if brawler_name in self.brawler_name_to_trueskill:
             return
 
-        rating = BrawlerTrueSkill(brawler_name, self.__db)
+        rating = BrawlerTrueSkill(brawler_name, self.__cursor, self.__conn)
         rating.populate_ratings()
         self.brawler_name_to_trueskill[brawler_name] = rating
 
