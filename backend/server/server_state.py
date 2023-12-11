@@ -3,7 +3,7 @@ from postgres_setup import initialize_postgresql
 from brawlstars_api.endpoints import populate_brawler_data
 from trueskill_utils import BrawlerTrueSkill, PlayerType
 
-from trueskill import rate
+from trueskill import rate, setup
 
 BATTLE_HASHES_LOCATION = "battle_hashes"
 

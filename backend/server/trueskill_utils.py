@@ -1,6 +1,6 @@
 from enum import Enum
 
-from trueskill import Rating
+from trueskill import Rating, setup, expose
 from db_constants import *
 from api_constants import *
 
@@ -8,6 +8,10 @@ from collections import defaultdict
 
 DEFAULT_MU = 25
 DEFAULT_SIGMA = 25 / 3
+DEFAULT_BETA = 25 / 6
+DEFAULT_TAU = 25 / 300
+
+setup(DEFAULT_MU, DEFAULT_SIGMA, DEFAULT_BETA, DEFAULT_TAU)
 
 
 class TrueSkillRating:
@@ -35,11 +39,14 @@ class TrueSkillRating:
             API_PRO_PLAYER_RATING_MU_KEY: self.pro_rating.mu,
             API_PRO_PLAYER_RATING_SIGMA_KEY: self.pro_rating.sigma,
             API_PRO_PLAYER_BATTLE_COUNT_KEY: self.pro_player_battle_count,
+            API_PRO_PLAYER_EXPOSURE_KEY: expose(self.pro_rating),
             API_APP_USER_RATING_MU_KEY: self.user_rating.mu,
             API_APP_USER_RATING_SIGMA_KEY: self.user_rating.sigma,
             API_APP_USER_BATTLE_COUNT_KEY: self.user_battle_count,
+            API_APP_USER_EXPOSURE_KEY: expose(self.user_rating),
             API_COMBINED_RATING_MU_KEY: self.combined_rating.mu,
-            API_COMBINED_RATING_SIGMA_KEY: self.combined_rating.sigma
+            API_COMBINED_RATING_SIGMA_KEY: self.combined_rating.sigma,
+            API_COMBINED_EXPOSURE_KEY: expose(self.combined_rating)
         }
 
 
@@ -83,7 +90,9 @@ class BrawlerTrueSkill:
 
         map_data = {}
         for (mode_name, map_name), map_rating in self.map_ratings.items():
-            map_data[mode_name] = {}
+            if mode_name not in map_data:
+                map_data[mode_name] = {}
+
             map_data[mode_name][map_name] = map_rating.convert_to_api_data()
 
         data[API_MAP_RATINGS_KEY] = map_data
@@ -158,7 +167,7 @@ class BrawlerTrueSkill:
         for row in rows:
             mode_name = row[rows_desc[MODE_NAME_KEY]]
             map_name = row[rows_desc[MAP_NAME_KEY]]
-            self.mode_ratings[(mode_name, map_name)] = BrawlerTrueSkill.get_rating_from_db_row(row, rows_desc)
+            self.map_ratings[(mode_name, map_name)] = BrawlerTrueSkill.get_rating_from_db_row(row, rows_desc)
 
     @staticmethod
     def get_rating_from_db_row(row, row_description: dict):

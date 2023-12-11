@@ -1,3 +1,4 @@
+import json
 from datetime import datetime
 
 from flask import Flask, request
@@ -150,16 +151,18 @@ def get_all_brawlers():
     }, 200
 
 
-@scheduler.task('interval', id='update_brawler_ratings_from_pro_play', minutes=60)
+@scheduler.task('interval', id='update_brawler_ratings_from_pro_play', hours=4)  # every 4 hours
 def update_brawler_ratings_from_pro_play():
-    print(f"CRON | Updating brawler ratings from pro play... Current Time: {datetime.now()}")
+    start_time = datetime.now()
+    print("----------------------------------------")
+    print(f"[CRON] COMMENCE | Updating brawler ratings from pro play... Current Time: {start_time}")
 
     top_players = []
 
     # get top global players
     response = bs_api.get_top_global_players()
     if response.is_error():
-        print(f"CRON | ERROR getting top global players: {response.error_message}")
+        print(f"[CRON] ERR! | getting top global players: {response.error_message}")
         return
 
     top_global_players_tags = [player["tag"] for player in response.data["items"]]
@@ -169,13 +172,13 @@ def update_brawler_ratings_from_pro_play():
     for brawler_name, brawler_id in server_state.brawler_name_store.brawler_name_to_id.items():
         response = bs_api.get_top_global_players_by_brawler(brawler_id)
         if response.is_error():
-            print(f"CRON | ERROR getting top global players by brawler ({brawler_name}): {response.error_message}")
+            print(f"[CRON] ERR! | getting top global players by brawler ({brawler_name}): {response.error_message}")
             continue
 
         top_global_players_on_brawler = [player["tag"] for player in response.data["items"]]
         top_players.extend(top_global_players_on_brawler)
 
-    print(f"CRON | STATUS all pro player tags acquired")
+    print(f"[CRON] INFO | all pro player tags acquired")
 
     total_logs_processed = 0
     average_player_process_time = 0
@@ -187,20 +190,19 @@ def update_brawler_ratings_from_pro_play():
             elapsed_time = datetime.now() - last_timestamp
             average_player_process_time = (average_player_process_time * i + elapsed_time.seconds * 1000) / (i + 1)
             last_timestamp = datetime.now()
-            print(f"CRON | STATUS average player processing time: {average_player_process_time} ms")
-            print(f"CRON | STATUS estimated time remaining: "
+            print(f"[CRON] INFO | average player processing time: {average_player_process_time} ms")
+            print(f"[CRON] INFO | estimated time remaining: "
                   f"{average_player_process_time * (len(top_players) - i) / 60000} minutes")
 
-        print(f"CRON | STATUS processing player ({player}) | Number {i} of {len(top_players)} | "
+        print(f"[CRON] INFO | processing player ({player}) | Number {i} of {len(top_players)} | "
               f"Total Battles Processed: {total_logs_processed}")
 
         response = bs_api.get_player_battle_log(player[1:])
         if response.is_error():
-            print(f"CRON | ERROR getting battle log for player ({player}): {response.error_message}")
+            print(f"[CRON] ERR! | getting battle log for player ({player}): {response.error_message}")
             continue
 
         battle_logs = response.data["items"]
-        print(f"CRON | STATUS battle logs to process: {len(battle_logs)}")
         for battle_log in battle_logs:
             battle_hash = None
             try:
@@ -209,7 +211,7 @@ def update_brawler_ratings_from_pro_play():
 
                 battle_hash = BattleHashStore.get_battle_hash(battle_log)
                 if battle_hash in server_state.battle_hash_store.battle_hashes:
-                    print(f"CRON | STATUS battle hash ({battle_hash}) already processed")
+                    print(f"[CRON] INFO | battle hash ({battle_hash}) already processed")
                     continue
 
                 # register in hash
@@ -244,14 +246,17 @@ def update_brawler_ratings_from_pro_play():
 
                 total_logs_processed += 1
             except Exception as e:
-                print(f"CRON | ERROR processing battle ({battle_hash}): {e}")
-                print(f"CRON | STATUS continuing after error")
+                print(f"[CRON] ERR! | processing battle ({battle_hash}): {e}")
                 continue
+
+    end_time = datetime.now()
+    print(f"[CRON] COMPLETE | Updating brawler ratings from pro play... Current Time: {end_time}")
+    print(f"[CRON] COMPLETE | Time Taken for Cron Job: {end_time - start_time}")
+    print("----------------------------------------")
 
 
 if __name__ == '__main__':
     server_state = ServerState()
-    # scheduler.init_app(app)
-    # scheduler.start()
-    # app.run(host='localhost', port=8000, debug=True)
-    update_brawler_ratings_from_pro_play()
+    scheduler.init_app(app)
+    scheduler.start()
+    app.run(host='localhost', port=8000, debug=True)
