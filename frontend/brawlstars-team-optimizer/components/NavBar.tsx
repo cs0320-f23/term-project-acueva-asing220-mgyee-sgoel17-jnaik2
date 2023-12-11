@@ -1,29 +1,35 @@
 import { Fragment, useState } from "react";
 import { Disclosure, Menu, Transition } from "@headlessui/react";
-import { Bars3Icon, BellIcon, WindowIcon, XMarkIcon } from "@heroicons/react/24/outline";
+import {
+  Bars3Icon,
+  BellIcon,
+  WindowIcon,
+  XMarkIcon,
+} from "@heroicons/react/24/outline";
 
 const navigation = [
   { name: "How To Use", href: "how-to", current: true },
   { name: "3v3 Team Optimizer", href: "3v3-optimizer", current: false },
   { name: "2v2 Team Optimizer", href: "2v2-optimizer", current: false },
   { name: "About", href: "about", current: false },
+  { name: "Sign Up", href: "sign-up", current: false },
+  { name: "Log in", href: "log-in", current: false },
 ];
 
 function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
 }
 
-
 export default function NavBar() {
   const inputString = window.location.href;
-  const lastSlashIndex = inputString.lastIndexOf('/');
+  const lastSlashIndex = inputString.lastIndexOf("/");
   if (lastSlashIndex !== -1 && lastSlashIndex < inputString.length - 1) {
     const sub = inputString.substring(lastSlashIndex + 1);
     navigation.map((tab) => {
-      tab.current = (tab.href === sub) ? true : false;
+      tab.current = tab.href === sub ? true : false;
     });
   }
-  
+
   return (
     <Disclosure as="nav" className="bg-gray-800">
       {({ open }) => (

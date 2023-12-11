@@ -10,6 +10,7 @@ import DropDownCheckBox from "@/components/DropDownCheckBox";
 import ReactTable from "@/components/ReactTable";
 import { BrawlerCard } from "@/components/BrawlerCard";
 import { BrawlerCardTable } from "@/components/BrawlerCardTable";
+import { populateIcons } from "../brawlerIcons";
 
 interface Player {
   tag: string;
@@ -37,8 +38,8 @@ enum Error {
   NO_TAG_ERROR,
 }
 
-const ngrokServerURL =
-  "https://159f-2620-6e-6000-3100-6481-ff51-677-dd27.ngrok-free.app/";
+const serverURL =
+  "https://159f-2620-6e-6000-3100-6481-ff51-677-dd27.ngrok-free.app";
 
 export default function TeamOpt3v3() {
   const usePlayerState = (playerNumber: number): Player => {
@@ -76,8 +77,10 @@ export default function TeamOpt3v3() {
   const player3 = usePlayerState(3);
 
   async function getCurrentBrawlers(): Promise<[string, string][]> {
-    const fetchJson = await fetch("http://localhost:8000/getAllBrawlers");
+    const fetchJson = await fetch(serverURL + "/getAllBrawlers");
     const currentBrawlers = await fetchJson.json();
+    console.log("raw brawler stuff");
+    console.log(currentBrawlers);
     if (currentBrawlers) {
       if (currentBrawlers.status === "success") {
         return currentBrawlers.data.map(
@@ -282,7 +285,7 @@ async function checkPlayerTag(player: Player) {
   let tagJson;
   let tagData;
   tagJson = await fetch(
-    "http://localhost:8000/getPlayerInventory?player_tag=" + player.tag
+    serverURL + "/getPlayerInventory?player_tag=" + player.tag
   );
   tagData = await tagJson.json();
   if (tagData) {

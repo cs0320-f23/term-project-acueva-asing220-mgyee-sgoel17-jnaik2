@@ -50,17 +50,38 @@ export default function DropDownCheckboxesTags(boxProps: checkBoxesProps) {
         const brawlerName = option.get("Brawler Name");
         return brawlerName ? brawlerName : "Unknown";
       }}
-      renderOption={(props, option, { selected }) => (
-        <li {...props}>
-          <Checkbox
-            icon={icon}
-            checkedIcon={checkedIcon}
-            style={{ marginRight: 8 }}
-            checked={selected}
-          />
-          {option.get("Brawler Name")}
-        </li>
-      )}
+      renderOption={(props, option, { selected }) => {
+        const brawlerName = option.get("Brawler Name");
+        if (!brawlerName) {
+          return;
+        }
+        if (boxProps.brawlersOwned.has(brawlerName)) {
+          return (
+            <li {...props}>
+              <Checkbox
+                icon={icon}
+                checkedIcon={checkedIcon}
+                style={{ marginRight: 8 }}
+                checked={selected}
+              />
+              {option.get("Brawler Name")}
+            </li>
+          );
+        } else {
+          return (
+            <li {...props}>
+              <Checkbox
+                icon={icon}
+                checkedIcon={checkedIcon}
+                style={{ marginRight: 8 }}
+                checked={selected}
+                disabled={true}
+              />
+              {option.get("Brawler Name")}
+            </li>
+          );
+        }
+      }}
       renderInput={(params) => (
         <TextField
           {...params}

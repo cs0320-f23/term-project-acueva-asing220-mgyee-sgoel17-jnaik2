@@ -1,14 +1,15 @@
 import { Card, CardContent, CardMedia, Typography } from "@mui/material";
 import { useEffect, useState } from "react";
 import * as React from "react";
+import { brawlerURLS } from "@/app/brawlerIcons";
 
 interface BrawlerCardProps {
   brawlerName: string;
+  brawlerInformation: brawlerURLS | undefined;
 }
 
 export function BrawlerCard(props: BrawlerCardProps) {
-  const brawlerImage: string =
-    "https://cdn-old.brawlify.com/profile/28000000.png";
+  const brawlerImage: string = props.brawlerInformation.brawler;
   return (
     <Card sx={{ display: "flex", maxWidth: 500 }}>
       <CardMedia
