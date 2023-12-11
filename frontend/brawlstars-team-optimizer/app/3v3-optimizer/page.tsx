@@ -37,6 +37,9 @@ enum Error {
   NO_TAG_ERROR,
 }
 
+const ngrokServerURL =
+  "https://159f-2620-6e-6000-3100-6481-ff51-677-dd27.ngrok-free.app/";
+
 export default function TeamOpt3v3() {
   const usePlayerState = (playerNumber: number): Player => {
     const [tag, setTag] = useState<string>("");
