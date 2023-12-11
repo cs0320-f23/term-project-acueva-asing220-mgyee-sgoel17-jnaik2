@@ -1,9 +1,9 @@
 import os
-from firebase_setup import initialize_firebase
+from postgres_setup import initialize_postgresql
 from brawlstars_api.endpoints import populate_brawler_data
-from trueskill_utils import BrawlerTrueSkill, TrueSkillRating, PlayerType
+from trueskill_utils import BrawlerTrueSkill, PlayerType
 
-from trueskill import rate
+from trueskill import rate, setup
 
 BATTLE_HASHES_LOCATION = "battle_hashes"
 
@@ -12,8 +12,8 @@ class ServerState:
     def __init__(self):
         self.brawler_name_store = BrawlerNameStore()
         self.battle_hash_store = BattleHashStore()
-        self.db = initialize_firebase()
-        self.brawler_rating_manager = BrawlerRatingsManager(self.db)
+        self.cursor, self.conn = initialize_postgresql()
+        self.brawler_rating_manager = BrawlerRatingsManager(self.cursor, self.conn)
 
 
 class BrawlerNameStore:
@@ -41,6 +41,7 @@ class BrawlerNameStore:
         return self.brawler_id_to_name[brawler_id]
 
 
+# TODO: migrate to postgres
 class BattleHashStore:
     def __init__(self):
         self.battle_hashes = {}
@@ -49,13 +50,13 @@ class BattleHashStore:
     @staticmethod
     def get_battle_hash(battle_data):
         battle_time = BattleHashStore.get_battle_time(battle_data)
-        battle_team1 = [player["tag"][1:] for player in battle_data["battle"]["teams"][0]]
-        battle_team2 = [player["tag"][1:] for player in battle_data["battle"]["teams"][1]]
+        battle_team1 = [player["tag"] for player in battle_data["battle"]["teams"][0]]
+        battle_team2 = [player["tag"] for player in battle_data["battle"]["teams"][1]]
         players = []
 
         players.extend(battle_team1)
         players.extend(battle_team2)
-        players.sort()
+        players.sort()  # very important to preserve a deterministic order
 
         return f"{battle_time}{''.join(players)}"
 
@@ -68,10 +69,10 @@ class BattleHashStore:
         return battle_time[:11]
 
     def load_battles_from_disk(self, battle_time):
-        if battle_time in self.loaded_times:
-            return
-
         battle_time_at_hour = BattleHashStore.get_battle_time_at_hour(battle_time)
+
+        if battle_time_at_hour in self.loaded_times:
+            return
 
         current_dir_contents = os.listdir()
         if BATTLE_HASHES_LOCATION in current_dir_contents:
@@ -95,30 +96,31 @@ class BattleHashStore:
         self.load_battles_from_disk(battle_time)
 
     def check_if_battle_exists(self, battle_hash, battle_time):
-        battle_time_at_hour = BattleHashStore.get_battle_time_at_hour(battle_time)
         self.load_battles_from_disk(battle_time)
 
         return self.battle_hashes[battle_hash] is not None
 
 
 class BrawlerRatingsManager:
-    def __init__(self, db):
-        self.__db = db
+    def __init__(self, cursor, conn):
+        self.__cursor = cursor
+        self.__conn = conn
         self.brawler_name_to_trueskill = {}
 
-    async def get_trueskill(self, brawler_name) -> BrawlerTrueSkill:
-        await self.load_trueskill_from_db(brawler_name)
+    def get_trueskill(self, brawler_name) -> BrawlerTrueSkill:
+        self.load_trueskill_from_db(brawler_name)
         return self.brawler_name_to_trueskill[brawler_name]
 
-    async def load_trueskill_from_db(self, brawler_name):
+    def load_trueskill_from_db(self, brawler_name):
         if brawler_name in self.brawler_name_to_trueskill:
             return
 
-        rating = BrawlerTrueSkill(brawler_name, self.__db)
-        await rating.populate_ratings()
+        rating = BrawlerTrueSkill(brawler_name, self.__cursor, self.__conn)
+        rating.populate_ratings()
         self.brawler_name_to_trueskill[brawler_name] = rating
 
-    async def register_battle(self, winning_brawlers, losing_brawlers, mode_name, map_name, player_type: PlayerType):
+    def register_battle(self, winning_brawlers, losing_brawlers, mode_name, map_name, player_type: PlayerType,
+                        was_draw):
         # get the TrueSkillRating objects for everyone
         winning_brawlers_ratings = [self.get_trueskill(brawler) for brawler in winning_brawlers]
         losing_brawlers_ratings = [self.get_trueskill(brawler) for brawler in losing_brawlers]
@@ -128,14 +130,14 @@ class BrawlerRatingsManager:
         losing_brawlers_global_ratings = [rating.global_rating for rating in losing_brawlers_ratings]
 
         BrawlerRatingsManager.update_ratings(winning_brawlers_global_ratings, losing_brawlers_global_ratings,
-                                             player_type)
+                                             player_type, was_draw)
 
         # get the mode ratings for each
         winning_brawlers_mode_ratings = [rating.mode_ratings[mode_name] for rating in winning_brawlers_ratings]
         losing_brawlers_mode_ratings = [rating.mode_ratings[mode_name] for rating in losing_brawlers_ratings]
 
         BrawlerRatingsManager.update_ratings(winning_brawlers_mode_ratings, losing_brawlers_mode_ratings,
-                                             player_type)
+                                             player_type, was_draw)
 
         # get the map ratings for each
         winning_brawlers_map_ratings = [rating.map_ratings[(mode_name, map_name)] for rating in
@@ -143,31 +145,32 @@ class BrawlerRatingsManager:
         losing_brawlers_map_ratings = [rating.map_ratings[(mode_name, map_name)] for rating in losing_brawlers_ratings]
 
         BrawlerRatingsManager.update_ratings(winning_brawlers_map_ratings, losing_brawlers_map_ratings,
-                                             player_type)
+                                             player_type, was_draw)
 
         for rating in winning_brawlers_ratings:
-            await rating.update_ratings_to_db(mode_name, map_name)
+            rating.update_ratings_to_db(mode_name, map_name)
 
         for rating in losing_brawlers_ratings:
-            await rating.update_ratings_to_db(mode_name, map_name)
+            rating.update_ratings_to_db(mode_name, map_name)
 
     @staticmethod
-    def update_ratings(winners_ratings, losers_ratings, player_type: PlayerType):
+    def update_ratings(winners_ratings, losers_ratings, player_type: PlayerType, was_draw):
         if player_type == PlayerType.PRO:
-            BrawlerRatingsManager.update_pro_player_ratings(winners_ratings, losers_ratings)
+            BrawlerRatingsManager.update_pro_player_ratings(winners_ratings, losers_ratings, was_draw)
         elif player_type == PlayerType.USER:
-            BrawlerRatingsManager.update_app_user_ratings(winners_ratings, losers_ratings)
+            BrawlerRatingsManager.update_app_user_ratings(winners_ratings, losers_ratings, was_draw)
         else:
             raise Exception(f"Invalid player type: {player_type}")
 
-        BrawlerRatingsManager.update_combined_ratings(winners_ratings, losers_ratings)
+        BrawlerRatingsManager.update_combined_ratings(winners_ratings, losers_ratings, was_draw)
 
     @staticmethod
-    def update_pro_player_ratings(winners_ratings, losers_ratings):
+    def update_pro_player_ratings(winners_ratings, losers_ratings, was_draw):
         winners_orig_ratings = [rating.pro_rating for rating in winners_ratings]
         losers_orig_ratings = [rating.pro_rating for rating in losers_ratings]
 
-        winners_new_ratings, losers_new_ratings = rate([winners_orig_ratings, losers_orig_ratings], ranks=[0, 1])
+        winners_new_ratings, losers_new_ratings = rate([winners_orig_ratings, losers_orig_ratings],
+                                                       ranks=[0, 1] if not was_draw else [0, 0])
 
         for i in range(len(winners_ratings)):
             winners_ratings[i].pro_rating = winners_new_ratings[i]
@@ -178,11 +181,12 @@ class BrawlerRatingsManager:
             losers_ratings[i].pro_player_battle_count += 1
 
     @staticmethod
-    def update_app_user_ratings(winners_ratings, losers_ratings):
+    def update_app_user_ratings(winners_ratings, losers_ratings, was_draw):
         winners_orig_ratings = [rating.user_rating for rating in winners_ratings]
         losers_orig_ratings = [rating.user_rating for rating in losers_ratings]
 
-        winners_new_ratings, losers_new_ratings = rate([winners_orig_ratings, losers_orig_ratings], ranks=[0, 1])
+        winners_new_ratings, losers_new_ratings = rate([winners_orig_ratings, losers_orig_ratings],
+                                                       ranks=[0, 1] if not was_draw else [0, 0])
 
         for i in range(len(winners_ratings)):
             winners_ratings[i].user_rating = winners_new_ratings[i]
@@ -193,11 +197,12 @@ class BrawlerRatingsManager:
             losers_ratings[i].user_battle_count += 1
 
     @staticmethod
-    def update_combined_ratings(winners_ratings, losers_ratings):
+    def update_combined_ratings(winners_ratings, losers_ratings, was_draw):
         winners_orig_ratings = [rating.combined_rating for rating in winners_ratings]
         losers_orig_ratings = [rating.combined_rating for rating in losers_ratings]
 
-        winners_new_ratings, losers_new_ratings = rate([winners_orig_ratings, losers_orig_ratings], ranks=[0, 1])
+        winners_new_ratings, losers_new_ratings = rate([winners_orig_ratings, losers_orig_ratings],
+                                                       ranks=[0, 1] if not was_draw else [0, 0])
 
         for i in range(len(winners_ratings)):
             winners_ratings[i].combined_rating = winners_new_ratings[i]

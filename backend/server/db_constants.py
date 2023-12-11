@@ -1,12 +1,8 @@
-TOP_LEVEL_COLLECTION = "trueSkill"
+SCHEMA_NAME = "main"
 
-GLOBAL_RATING_DOCUMENT = "globalTrueSkill"
-MODE_RATING_DOCUMENT = "modeTrueSkill"
-MAP_RATING_DOCUMENT = "mapTrueSkill"
-
-MODES_SUB_COLLECTION = "modes"
-MAPS_SUB_COLLECTION = "maps"
-BRAWLERS_SUB_COLLECTION = "brawlers"
+GLOBAL_RATING_TABLE = "globalTrueSkill"
+MODE_RATING_TABLE = "modeTrueSkill"
+MAP_RATING_TABLE = "mapTrueSkill"
 
 # rating document constants
 PRO_PLAYER_MU_KEY = "proPlayerMu"
@@ -19,3 +15,7 @@ USER_BATTLE_COUNT_KEY = "userBattleCount"
 
 COMBINED_MU_KEY = "combinedMu"
 COMBINED_SIGMA_KEY = "combinedSigma"
+
+BRAWLER_NAME_KEY = "brawlerName"
+MODE_NAME_KEY = "battleMode"
+MAP_NAME_KEY = "battleMap"
