@@ -118,6 +118,7 @@ def get_map_rotation():
 @app.route('/getBrawlerRating')
 def get_brawler_rating():
     brawler_name = request.args.get('brawlerName')
+    brawler_name = brawler_name.upper()
 
     if not server_state.brawler_name_store.check_if_brawler_exists(brawler_name):
         return {
@@ -138,20 +139,14 @@ def get_all_brawlers():
     brawler_name_to_id_dict = server_state.brawler_name_store.brawler_name_to_id
     data = [(k, v) for k, v in brawler_name_to_id_dict.items()]
 
-    start = datetime.now()
-    print(f"TIME NOW: {start}")
-    update_brawler_ratings_from_pro_play()
-    end = datetime.now()
-    print(f"TIME NOW: {end}")
-    print(f"ELAPSED: {end - start}")
-
     return {
         "status": "success",
         "data": data
     }, 200
 
 
-@scheduler.task('interval', id='update_brawler_ratings_from_pro_play', hours=4)  # every 4 hours
+# every 4 hours
+@scheduler.task('interval', id='update_brawler_ratings_from_pro_play', hours=4)
 def update_brawler_ratings_from_pro_play():
     start_time = datetime.now()
     print("----------------------------------------")
@@ -258,5 +253,6 @@ def update_brawler_ratings_from_pro_play():
 if __name__ == '__main__':
     server_state = ServerState()
     scheduler.init_app(app)
+    scheduler.get_job('update_brawler_ratings_from_pro_play').modify(next_run_time=datetime.now())
     scheduler.start()
-    app.run(host='localhost', port=8000, debug=True)
+    app.run(host='localhost', port=8000, debug=False)
