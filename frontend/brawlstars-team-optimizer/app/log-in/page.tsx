@@ -5,6 +5,7 @@ import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import Avatar from "@mui/material/Avatar";
+import { useRouter } from "next/navigation";
 import Button from "@mui/material/Button";
 import CssBaseline from "@mui/material/CssBaseline";
 import TextField from "@mui/material/TextField";
@@ -17,6 +18,7 @@ import Container from "@mui/material/Container";
 const defaultTheme = createTheme();
 
 const Login = () => {
+  const router = useRouter();
   const [email, setEmail] = useState("Please enter an email address");
   const [password, setPassword] = useState("Please enter a password");
 
@@ -28,6 +30,7 @@ const Login = () => {
         // Logged in
         const user = userCredential.user;
         alert("Succesfully logged in");
+        router.replace("/how-to");
       })
       .catch((error) => {
         const errorCode = error.code;

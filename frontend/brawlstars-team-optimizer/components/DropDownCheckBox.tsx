@@ -120,7 +120,7 @@ export default function DropDownCheckboxesTags(boxProps: checkBoxesProps) {
   );
 }
 
-function toTitleCase(str: string): string {
+export function toTitleCase(str: string): string {
   return str.toLowerCase().replace(/(?:^|\s)\w/g, (match) => {
     return match.toUpperCase();
   });

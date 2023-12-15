@@ -80,6 +80,9 @@ export default function TeamOpt3v3() {
     };
   };
 
+  const [globalBuildMap, setGlobalBuildMap] = useState<
+    Map<string, [[number, string][], [number, string][]]>
+  >(new Map<string, [[number, string][], [number, string][]]>());
   const [rows, setRows] = useState<team[]>([]);
   const [iconMap, setIconMap] = useState<Map<string, brawlerURLS>>(
     new Map<string, brawlerURLS>()
@@ -93,13 +96,6 @@ export default function TeamOpt3v3() {
   const player1 = usePlayerState(1);
   const player2 = usePlayerState(2);
   const player3 = usePlayerState(3);
-
-  useEffect(() => {
-    async function initializeIcons() {
-      setIconMap(await populateIcons());
-    }
-    initializeIcons();
-  }, []);
 
   async function getCurrentBrawlers(): Promise<[string, string][]> {
     const fetchJson = await fetch(serverURL + "/getAllBrawlers");
@@ -121,14 +117,30 @@ export default function TeamOpt3v3() {
   //not sure if this will stay like this, will probably just set the state
   // instead of returning
   async function getModeMapData(): Promise<[string, string[]][]> {
-    const fetchJson = await fetch(serverURL + "/getAllMap");
+    const fetchJson = await fetch(serverURL + "/getMapRotation");
     const allMapModePairs = await fetchJson.json();
     if (allMapModePairs) {
       if (allMapModePairs.status === "success") {
         // will be in a for each loop
-        const modeMapTuples = [];
+        const modeMapTuples: [string, string[]][] = [];
         const modeMaps: [string, string[]] = ["Mode 1", ["Map 1", "Map2"]];
-        modeMapTuples.push(modeMaps);
+        const currMaps = new Set<string>();
+        allMapModePairs.data.map((mapData) => {
+          const mode: string = mapData.event.mode;
+          const map: string = mapData.event.map;
+
+          if (currMaps.has(mode)) {
+            modeMapTuples.map(([currMode, maps]) => {
+              if (currMode === mode) {
+                return [mode, [...maps, map]];
+              }
+              return [currMode, maps];
+            });
+          } else {
+            currMaps.add(mode);
+            modeMapTuples.push([mode, [map]]);
+          }
+        });
         // if we need specific mode order, we can manipulate dictionary
         // to be an ordered list of maps
         return modeMapTuples;
@@ -219,7 +231,11 @@ export default function TeamOpt3v3() {
     let brawlerList: Set<string>[] = [];
     const players = [player1, player2, player3];
     for (const player of players) {
-      if (!player.isValid || player.preferredBrawlers.size == 0) {
+      if (player.preferredBrawlers.size !== 0) {
+        brawlerList.push(player.preferredBrawlers);
+      } else if (player.isValid) {
+        brawlerList.push(player.brawlersOwned);
+      } else {
         brawlerList.push(
           new Set(
             allBrawlers.map(([name, id]) => {
@@ -227,8 +243,6 @@ export default function TeamOpt3v3() {
             })
           )
         );
-      } else {
-        brawlerList.push(player.preferredBrawlers);
       }
     }
     return brawlerList;
@@ -242,8 +256,16 @@ export default function TeamOpt3v3() {
       console.log(currentBrawlers);
     };
     fetchCurrentBrawlerData();
-    console.log("fetched all brawler data!");
+    console.log("Fetched all brawler data!");
   }, []);
+
+  useEffect(() => {
+    async function initializeIcons() {
+      const brawlerLinks = await populateIcons();
+      setIconMap(brawlerLinks);
+    }
+    initializeIcons();
+  }, [allBrawlers]);
 
   useEffect(() => {
     const fetchModeMapData = async () => {
@@ -281,6 +303,7 @@ export default function TeamOpt3v3() {
           <MapDropDown
             setCurrentMap={setCurrentMap}
             allMapModes={allMapModes}
+            currentMode={currentMode}
           />
         </div>
       </div>
@@ -298,8 +321,9 @@ export default function TeamOpt3v3() {
               {iconMap && (
                 <BrawlerCardTable
                   preferredBrawlers={player1.preferredBrawlers}
-                  globalBrawlerInformation={iconMap}
-                  playerBrawlerInformation={player1.brawlerBuildMap}
+                  globalBrawlersInformation={iconMap}
+                  playerBrawlersInformation={player1.brawlerBuildMap}
+                  defaultID={player1.isValid}
                 ></BrawlerCardTable>
               )}
             </div>
@@ -327,8 +351,9 @@ export default function TeamOpt3v3() {
               {iconMap && (
                 <BrawlerCardTable
                   preferredBrawlers={player2.preferredBrawlers}
-                  globalBrawlerInformation={iconMap}
-                  playerBrawlerInformation={player2.brawlerBuildMap}
+                  globalBrawlersInformation={iconMap}
+                  playerBrawlersInformation={player2.brawlerBuildMap}
+                  defaultID={player2.isValid}
                 ></BrawlerCardTable>
               )}
             </div>
@@ -357,8 +382,9 @@ export default function TeamOpt3v3() {
               {iconMap && (
                 <BrawlerCardTable
                   preferredBrawlers={player3.preferredBrawlers}
-                  globalBrawlerInformation={iconMap}
-                  playerBrawlerInformation={player3.brawlerBuildMap}
+                  globalBrawlersInformation={iconMap}
+                  playerBrawlersInformation={player3.brawlerBuildMap}
+                  defaultID={player3.isValid}
                 ></BrawlerCardTable>
               )}
             </div>
@@ -382,10 +408,16 @@ export default function TeamOpt3v3() {
           tabIndex={9}
           id="button"
           onClick={() => {
-            console.log(iconMap);
-            const brawlers: Set<string>[] = getBrawlerList();
-            const teams = populateTable(brawlers);
-            setRows(teams);
+            const setTable = async () => {
+              const brawlers: Set<string>[] = getBrawlerList();
+              const teams = await populateTable(
+                brawlers,
+                currentMode,
+                currentMap
+              );
+              setRows(teams);
+            };
+            setTable();
           }}
           aria-label="Submit button"
           aria-description="Interprets the text currently entered in the command input textbox as a command and displays the result of executing the command in the result history.
@@ -442,15 +474,15 @@ async function updateBrawlersOwned(player: Player, rawBrawlerData: any) {
         player.setBrawlersOwned(player.brawlersOwned.add(brawlerName));
         let starPowerList: [number, string][] = [];
         let gadgetList: [number, string][] = [];
-        for (const starPower of brawler.starPowers) {
+        for (const starPower of brawler["starPowers"]) {
           const starPowerInfo: [number, string] = [
-            starPower.name,
             starPower.id,
+            starPower.name,
           ];
           starPowerList.push(starPowerInfo);
         }
-        for (const gadget of brawler.gadget) {
-          const gadgetInfo: [number, string] = [gadget.name, gadget.id];
+        for (const gadget of brawler["gadgets"]) {
+          const gadgetInfo: [number, string] = [gadget.id, gadget.name];
           gadgetList.push(gadgetInfo);
         }
         brawlerBuildMap.set(brawlerName, [starPowerList, gadgetList]);
@@ -486,25 +518,107 @@ function errorToBannerText(error: Error) {
   return "Something went wrong, please try again later";
 }
 
-function populateTable(brawlers: Set<string>[]): team[] {
-  // const data = await fetch("");
-  // const json = await data.json();
-  const team1: team = {
-    b1: "Shelly",
-    b2: "Colt",
-    b3: "Crow",
-    score: 20,
-  };
-  const json = [team1];
+async function populateTable(
+  brawlers: Set<string>[],
+  mode: string,
+  map: string
+): Promise<team[]> {
+  let rankings = [];
+  for (const brawlerSet of brawlers) {
+    const rankData = [];
+    for (const brawler of brawlerSet) {
+      const ratingData = await fetch(
+        serverURL + "/getBrawlerRating?brawlerName=" + brawler
+      );
+      const ratingJson = await ratingData.json();
+      if (ratingJson.status == "success") {
+        rankData.push(ratingJson.data);
+      }
+    }
+    rankings.push(rankData);
+  }
+
+  const averages = new Map<Set<string>, number>();
+  const list1 = rankings[0];
+  const list2 = rankings[1];
+  const list3 = rankings[2];
+
+  for (let i = 0; i < list1.length; i++) {
+    for (let j = 0; j < list2.length; j++) {
+      if (list2[j]["brawler-name"] === list1[i]["brawler-name"]) {
+        continue;
+      }
+      for (let k = 0; k < list3.length; k++) {
+        if (
+          list3[k]["brawler-name"] === list2[j]["brawler-name"] ||
+          list3[k]["brawler-name"] === list1[i]["brawler-name"]
+        ) {
+          continue;
+        }
+        let average: number = -100;
+        if (mode !== "") {
+          if (map !== "") {
+            average =
+              (list1[i]["map-ratings"][mode][map]["combined-exposure"] +
+                list2[j]["map-ratings"][mode][map]["combined-exposure"] +
+                list3[k]["map-ratings"][mode][map]["combined-exposure"]) /
+              3;
+          } else {
+            average =
+              (list1[i]["mode-ratings"][mode]["combined-exposure"] +
+                list2[j]["mode-ratings"][mode]["combined-exposure"] +
+                list3[k]["mode-ratings"][mode]["combined-exposure"]) /
+              3;
+          }
+        } else {
+          average =
+            (list1[i]["global-rating"]["combined-exposure"] +
+              list2[j]["global-rating"]["combined-exposure"] +
+              list3[k]["global-rating"]["combined-exposure"]) /
+            3;
+        }
+        const names = new Set<string>([
+          toTitleCase(list1[i]["brawler-name"]),
+          toTitleCase(list2[j]["brawler-name"]),
+          toTitleCase(list3[k]["brawler-name"]),
+        ]);
+        if (!averages.has(names)) {
+          averages.set(names, average);
+        }
+      }
+    }
+  }
+
+  const averagesList = [...averages];
+  averagesList.sort((a, b) => b[1] - a[1]);
+
+  const topTeams: [string[], number][] = averagesList
+    .slice(0, 10)
+    .map((team) => [[...team[0]], team[1]]);
+
+  console.log(topTeams);
+  // const team1: team = {
+  //   b1: "Shelly",
+  //   b2: "Colt",
+  //   b3: "Crow",
+  //   score: 20,
+  // };
+  // const json = [team1];
   let teams: team[] = [];
-  for (const brawlerTeam of json) {
+  for (const brawlerTeam of topTeams) {
     const teamToBeAdded: team = {
-      b1: brawlerTeam.b1,
-      b2: brawlerTeam.b2,
-      b3: brawlerTeam.b3,
-      score: brawlerTeam.score,
+      b1: brawlerTeam[0][0],
+      b2: brawlerTeam[0][1],
+      b3: brawlerTeam[0][2],
+      score: brawlerTeam[1],
     };
     teams.push(teamToBeAdded);
   }
   return teams;
+}
+
+function toTitleCase(str: string): string {
+  return str.toLowerCase().replace(/(?:^|\s)\w/g, (match) => {
+    return match.toUpperCase();
+  });
 }

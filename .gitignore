@@ -7,6 +7,9 @@ backend/server/private/
 **/keys*
 **/*keys.json
 
+# Firebase api keys
+frontend/brawlstars-team-optimizer/app/firebase.js
+
 # PyCharm
 .idea/
 

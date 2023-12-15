@@ -6,8 +6,8 @@ import FormControl from "@mui/material/FormControl";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 
 interface DropDownProps {
-  setCurrentMode: React.Dispatch<React.SetStateAction<string>>;
   allMapModes: [string, string[]][];
+  setCurrentMode: React.Dispatch<React.SetStateAction<string>>;
 }
 
 export default function ModeDropDown(props: DropDownProps) {
@@ -32,11 +32,26 @@ export default function ModeDropDown(props: DropDownProps) {
         >
           {props.allMapModes.map((modeMapTuple) => {
             return (
-              <MenuItem value={modeMapTuple[0]}>{modeMapTuple[0]}</MenuItem>
+              <MenuItem value={modeMapTuple[0]}>
+                {camelToTitleCase(modeMapTuple[0])}
+              </MenuItem>
             );
           })}
         </Select>
       </FormControl>
     </Box>
   );
+}
+
+function camelToTitleCase(str: string) {
+  const camelCaseString = str.match(/[A-Z]*[a-z]+/g);
+  console.log(camelCaseString);
+
+  if (camelCaseString) {
+    const titleCaseString = camelCaseString
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+    return titleCaseString;
+  }
+  return str;
 }

@@ -5,26 +5,65 @@ import { brawlerURLS } from "@/components/brawlerIcons";
 
 interface BrawlerCardProps {
   brawlerName: string;
-  globalBrawlerLinks: brawlerURLS | undefined;
+  globalBrawlerLinks: brawlerURLS;
   gadgets: [number, string][];
   starPowers: [number, string][];
+  defaultID: boolean;
 }
 
-function generateIcons(iconMap: [number, string][], brawlerLinks: brawlerURLS): React.JSX.Element[] {
-  return iconMap.map(([iconID, iconName]) => (
-
-    <Grid item xs={3}>
-      <img src={iconLink} alt={iconName} className="lockedIcon" />
-    </Grid>
-  ));
+function generateIcons(props: BrawlerCardProps): React.JSX.Element[] {
+  let gridArray: React.JSX.Element[] = [];
+  console.log(props.globalBrawlerLinks.gadgets);
+  for (const [globalStarPowerInfo, starPowerIcon] of props.globalBrawlerLinks
+    .starPowers) {
+    const icon: React.JSX.Element = (
+      <Grid item xs={3}>
+        <img
+          src={starPowerIcon}
+          alt={globalStarPowerInfo[1]}
+          className={
+            props.starPowers.some(
+              (info) => info[0] == globalStarPowerInfo[0]
+            ) || !props.defaultID
+              ? "unlockedIcon"
+              : "lockedIcon"
+          }
+        />
+      </Grid>
+    );
+    gridArray.push(icon);
+  }
+  for (const [globalGadgetInfo, gadgetIcon] of props.globalBrawlerLinks
+    .gadgets) {
+    const icon: React.JSX.Element = (
+      <Grid item xs={3}>
+        <img
+          src={gadgetIcon}
+          alt={globalGadgetInfo[1]}
+          className={
+            props.gadgets.some((info) => info[0] == globalGadgetInfo[0]) ||
+            !props.defaultID
+              ? "unlockedIcon"
+              : "lockedIcon"
+          }
+        />
+      </Grid>
+    );
+    gridArray.push(icon);
+  }
+  return gridArray;
 }
+
+//    <Grid item xs={3}>
+//   <img src={iconLink} alt={iconName} className="lockedIcon" />
+// </Grid>
 
 export function BrawlerCard(props: BrawlerCardProps) {
   if (props.globalBrawlerLinks !== undefined) {
     return (
       <Card sx={{ display: "flex", maxWidth: 500 }}>
         <CardMedia
-          sx={{ width: 80, height: 120, objectFit: "scale-down" }}
+          sx={{ width: 60, height: 100, objectFit: "scale-down" }}
           component="img"
           image={props.globalBrawlerLinks.brawler}
           title={`${props.brawlerName} image`}
@@ -37,8 +76,7 @@ export function BrawlerCard(props: BrawlerCardProps) {
               </Typography>
             </Grid>
             <Grid container spacing={1} item xs={12}>
-              {generateIcons(props.gadgets, props.globalBrawlerLinks)}
-              {generateIcons(props.starPowers, props.globalBrawlerLinks)}
+              {generateIcons(props)}
             </Grid>
           </Grid>
         </CardContent>

@@ -1,20 +1,16 @@
 "use client";
 import NavBar from "@/components/NavBar";
-import React, { useEffect, useState, FormEvent } from "react";
+import React, { useState, FormEvent } from "react";
 import { createUserWithEmailAndPassword } from "firebase/auth";
-import { auth } from "../firebase";
-import { redirect } from "next/navigation";
-import { Link as RouterLink } from "react-router-dom";
-import { useRouter, NextRouter } from "next/router";
-import { withRouter } from "next/router";
-import { useNavigate } from "react-router-dom";
+import { auth, db } from "../firebase";
+import { useRouter } from "next/navigation";
+import { doc, setDoc } from "firebase/firestore";
+import { getFirestore, collection, addDoc } from "firebase/firestore";
 import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
 import CssBaseline from "@mui/material/CssBaseline";
 import TextField from "@mui/material/TextField";
 import FormControlLabel from "@mui/material/FormControlLabel";
-import Checkbox from "@mui/material/Checkbox";
-import Link from "@mui/material/Link";
 import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
@@ -23,15 +19,12 @@ import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import "./sign-up.css";
 import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
+import { Link } from "@mui/material";
 
 const defaultTheme = createTheme();
 
-interface Props {
-  // router: AppRouterInstance;
-  router: NextRouter;
-}
 function Signup() {
-  // const a = useRouter();
+  const router = useRouter();
   // const navigate = useNavigate();
   // const history = useHistory();
   const [signupSuccess, setSignupSuccess] = useState(false);
@@ -39,25 +32,81 @@ function Signup() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  // const db = getFirestore(); // Initialize Firestore
+  const addUser = async (userUid: string) => {
+    try {
+      // Add a new document with a generated ID to the "Users" collection
+      console.log(userUid);
+      await setDoc(doc(db, "Users", userUid), {
+        uid: userUid,
+        email: email,
+        playerTag: "",
+      });
+      // db.collection("Users")
+      //   .doc(userUid)
+      //   .set({
+      //     uid: userUid,
+      //     email: email,
+      //     playerTag: "",
+      //   })
+      //   .then(() => {
+      //     console.log("Document successfully written!");
+      //   })
+      //   .catch((error: string) => {
+      //     console.error("Error writing document: ", error);
+      //   });
+    } catch (error) {
+      console.error("Error adding document: ", error);
+    }
+  };
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
-    await createUserWithEmailAndPassword(auth, email, password)
-      .then((userCredential) => {
-        // Signed in
-        const user = userCredential.user;
-        console.log(user);
-        // console.log(props.router);
-        // props.router.replace("/how-to");
-        setSignupSuccess(true);
-        // redirect("/howto");
-      })
-      .catch((error) => {
-        const errorCode = error.code;
-        const errorMessage = error.message;
-        console.log(errorCode, errorMessage);
-        alert("The error code is: " + errorMessage);
-      });
+    // await createUserWithEmailAndPassword(auth, email, password)
+    //   .then((userCredential) => {
+    //     // Signed in
+    //     const user = userCredential.user;
+    //     const id = user.uid;
+    //     console.log(user);
+    //     console.log(id);
+    //     await addUser(id);
+    //     // console.log(props.router);
+    //     router.replace("/how-to");
+    //     // navigate("/how-to");
+    //     setSignupSuccess(true);
+    //     // redirect("/howto");
+    //   })
+    //   .catch((error) => {
+    //     const errorCode = error.code;
+    //     const errorMessage = error.message;
+    //     console.log(errorCode, errorMessage);
+    //     alert("The error code is: " + errorMessage);
+    //   });
+
+    try {
+      const userCredential = await createUserWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
+      const user = userCredential.user;
+
+      console.log("User signed up:", user);
+
+      // Add the user to the "Users" collection in Firestore
+      await addUser(user.uid);
+
+      // Redirect to the desired page
+      router.replace("/how-to");
+
+      // Set signup success state
+      setSignupSuccess(true);
+    } catch (error: unknown) {
+      const errorCode = (error as any).code;
+      const errorMessage = (error as any).message;
+      console.error("Signup error:", errorCode, errorMessage);
+      alert("The error code is: " + errorMessage);
+    }
   };
 
   return (
@@ -80,7 +129,7 @@ function Signup() {
             <Typography component="h1" variant="h5">
               Sign up
             </Typography>
-            <Box component="form" noValidate sx={{ mt: 3 }}>
+            <Box component="form" noValidate sx={{ mt: 3 }} onSubmit={onSubmit}>
               <Grid container spacing={2}>
                 {/* <Grid item xs={12} sm={6}>
                   <TextField
@@ -132,19 +181,9 @@ function Signup() {
                 fullWidth
                 variant="contained"
                 sx={{ mt: 3, mb: 2 }}
-                onSubmit={onSubmit}
               >
                 Sign Up
               </Button>
-              {/* <div>
-                {signupSuccess && (
-                  <RouterLink to="/how-to" style={{ textDecoration: "none" }}>
-                    <Button fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
-                      Go to How-To Page
-                    </Button>
-                  </RouterLink>
-                )}
-              </div> */}
               <Grid container justifyContent="flex-end">
                 <Grid item>
                   <Link href="log-in" variant="body2">

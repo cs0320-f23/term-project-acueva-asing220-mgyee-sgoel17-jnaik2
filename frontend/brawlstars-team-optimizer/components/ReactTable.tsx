@@ -99,7 +99,9 @@ export function BasicTable(props: Props) {
                   />
                 </div>
               </StyledTableCell>
-              <StyledTableCell align="center">{team.score}</StyledTableCell>
+              <StyledTableCell align="center">
+                {(team.score + 100).toString()}
+              </StyledTableCell>
             </StyledTableRow>
           ))}
         </TableBody>

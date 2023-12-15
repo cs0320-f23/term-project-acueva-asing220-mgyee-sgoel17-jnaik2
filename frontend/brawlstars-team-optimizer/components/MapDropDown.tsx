@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useState } from "react";
 import Box from "@mui/material/Box";
 import InputLabel from "@mui/material/InputLabel";
 import MenuItem from "@mui/material/MenuItem";
@@ -6,12 +6,19 @@ import FormControl from "@mui/material/FormControl";
 import Select, { SelectChangeEvent } from "@mui/material/Select";
 
 interface DropDownProps {
-  setCurrentMap: React.Dispatch<React.SetStateAction<string>>;
+  currentMode: string;
   allMapModes: [string, string[]][];
+  setCurrentMap: React.Dispatch<React.SetStateAction<string>>;
 }
 
 export default function MapDropDown(props: DropDownProps) {
   const [value, setValue] = useState<string>("");
+  let viableMaps: string[] = [];
+  props.allMapModes.forEach(([mode, maps]) => {
+    if (mode == props.currentMode) {
+      viableMaps = viableMaps.concat(maps);
+    }
+  });
 
   const handleChange = (event: SelectChangeEvent) => {
     const mode: string = event.target.value as string;
@@ -30,13 +37,24 @@ export default function MapDropDown(props: DropDownProps) {
           label="Map Selector"
           onChange={handleChange}
         >
-          {props.allMapModes.map((modeMapTuple) => {
-            return (
-              <MenuItem value={modeMapTuple[1]}>{modeMapTuple[1]}</MenuItem>
-            );
+          {viableMaps.map((map) => {
+            return <MenuItem value={map}>{map}</MenuItem>;
           })}
         </Select>
       </FormControl>
     </Box>
   );
+}
+
+function camelToTitleCase(str: string) {
+  const camelCaseString = str.match(/[A-Z]*[a-z]+/g);
+  console.log(camelCaseString);
+
+  if (camelCaseString) {
+    const titleCaseString = camelCaseString
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(" ");
+    return titleCaseString;
+  }
+  return str;
 }

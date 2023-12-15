@@ -98,6 +98,16 @@
 
 .lockedIcon {
   filter: grayscale(100%);
+  width: 60px;
+}
+
+.unlockedIcon {
+  filter: grayscale(0%);
+  width: 60px;
+}
+
+.profile-player-playerTag {
+  margin-top: 100px;
 }
 
 /* .Command-box {
