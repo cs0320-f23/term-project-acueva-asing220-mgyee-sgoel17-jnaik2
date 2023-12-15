@@ -9,23 +9,7 @@ import TableRow from "@mui/material/TableRow";
 import Paper from "@mui/material/Paper";
 import TeamCell from "@/components/TeamIcon";
 import "@/styles/App.css";
-
-// function createData(team: string, winrate: number, trueskill: number) {
-//   return { team, winrate, trueskill };
-// }
-
-// function createData();
-
-// const createData = (teamName, winrate, trueskill) => ({
-//   team: (
-//     <TeamCell
-//       teamName={teamName}
-//       teamIcon="https://cdn.brawlify.com/profile/28000000.png?v=1"
-//     />
-//   ),
-//   winrate,
-//   trueskill,
-// });
+import { brawlerURLS } from "./brawlerIcons";
 
 // function createData(
 //   teamName1: string,
@@ -35,106 +19,17 @@ import "@/styles/App.css";
 //   trueSkill: number
 // ) {
 //   return {
-//     id: (teamName1 + teamName2 + teamName3).toLowerCase().replace(/\s+/g, "-"), // Generate a unique ID based on teamName
-//     team: (
-//       <TeamCell
-//         key={teamName1}
-//         teamName={teamName1}
-//         teamIcon="https://cdn.brawlify.com/profile/28000000.png?v=1"
-//       />
-//     ),
+//     id: (teamName1 + teamName2 + teamName3).toLowerCase().replace(/\s+/g, "-"),
+//     teamName1,
+//     teamIcon1: "https://cdn.brawlify.com/profile/28000000.png?v=1", // Replace with the actual icon URL
+//     teamName2,
+//     teamIcon2: "https://cdn.brawlify.com/profile/28000000.png?v=1", // Replace with the actual icon URL
+//     teamName3,
+//     teamIcon3: "https://cdn.brawlify.com/profile/28000000.png?v=1", // Replace with the actual icon URL
 //     winRate,
 //     trueSkill,
 //   };
 // }
-
-function createData(
-  teamName1: string,
-  teamName2: string,
-  teamName3: string,
-  winRate: number,
-  trueSkill: number
-) {
-  return {
-    id: (teamName1 + teamName2 + teamName3).toLowerCase().replace(/\s+/g, "-"),
-    teamName1,
-    teamIcon1: "https://cdn.brawlify.com/profile/28000000.png?v=1", // Replace with the actual icon URL
-    teamName2,
-    teamIcon2: "https://cdn.brawlify.com/profile/28000000.png?v=1", // Replace with the actual icon URL
-    teamName3,
-    teamIcon3: "https://cdn.brawlify.com/profile/28000000.png?v=1", // Replace with the actual icon URL
-    winRate,
-    trueSkill,
-  };
-}
-
-// function createData(
-//   teamName1: string,
-//   teamName2: string,
-//   teamName3: string,
-//   winRate: number,
-//   trueskill: number
-// ) {
-//   return
-//     {
-//       id: (teamName1+teamName2+teamName3).toLowerCase().replace(/\s+/g, "-"),
-//     //   team: (
-//     //     <div>
-//     //     {//   <TeamCell
-//     //     //     teamName={teamName1}
-//     //     //     teamIcon="https://cdn.brawlify.com/profile/28000000.png?v=1"
-//     //     //   />
-//     //     //   <TeamCell
-//     //     //     teamName={teamName2}
-//     //     //     teamIcon="https://cdn.brawlify.com/profile/28000000.png?v=1"
-//     //     //   />
-//     //     //   <TeamCell
-//     //     //     teamName={teamName3}
-//     //     //     teamIcon="https://cdn.brawlify.com/profile/28000000.png?v=1"
-//     //     //   />}
-//     //     </div>
-//     //   ),
-//       winRate,
-//       trueskill,
-//     };
-// }
-
-// const createData = async (
-//   teamName: string,
-//   winrate: number,
-//   trueskill: number
-// ) => {
-//   const icons = await fetchTeamIcons();
-
-//   return {
-//     team: icons.map((icon, index) => ({ icon, label: `Element ${index + 1}` })),
-//     winrate,
-//     trueskill,
-//   };
-// };
-
-const sample_url = "https://cdn.brawlify.com/profile/28000000.png?v=1";
-
-// const fetchTeamIcons = async () => {
-//   // Fetch icons from the API and return them
-//   // Example:
-//   const response = await fetch("your-api-endpoint");
-//   const data = await response.json();
-//   return data.icons;
-// };
-
-// TeamInfo component to render team information as a card
-// const TeamInfo = ({ team }) => (
-//   <div>
-//     {team.map(({ icon, label }) => (
-//       <div key={label}>
-//         <img src={icon} alt={label} width="30" height="30" />{" "}
-//         {/* Adjust width and height as needed */}
-//         <p>{label}</p>
-//       </div>
-//     ))}
-//   </div>
-// );
 
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
@@ -156,41 +51,55 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   },
 }));
 
-const rows = [
-  createData("Brawler 1", "Brawler 2", "Brawler 3", 10, 4),
-  createData("Brawler 4", "Brawler 5", "Brawler 6", 1, 42),
-];
+// const rows = [
+//   createData("Brawler 1", "Brawler 2", "Brawler 3", 10, 4),
+//   createData("Brawler 4", "Brawler 5", "Brawler 6", 1, 42),
+// ];
 
-export default function BasicTable() {
+export interface team {
+  b1: string;
+  b2: string;
+  b3: string;
+  score: number;
+}
+
+interface Props {
+  rows: team[];
+  iconMap: Map<string, brawlerURLS>;
+}
+
+export function BasicTable(props: Props) {
   return (
     <TableContainer component={Paper}>
       <Table sx={{ minWidth: 650 }} aria-label="simple table">
         <TableHead>
           <StyledTableRow>
             <StyledTableCell align="center">Team</StyledTableCell>
-            <StyledTableCell align="center">Win rate</StyledTableCell>
-            <StyledTableCell align="center">True Skill</StyledTableCell>
+            <StyledTableCell align="center">Score</StyledTableCell>
           </StyledTableRow>
         </TableHead>
         <TableBody>
-          {rows.map((row) => (
+          {props.rows.map((team) => (
             <StyledTableRow
-              key={row.id}
               sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
             >
-              {/* <StyledTableCell align="center">{row.team}</StyledTableCell>
-              <StyledTableCell align="center">{row.winRate}</StyledTableCell>
-              <StyledTableCell align="center">{row.trueSkill}</StyledTableCell> */}
-
               <StyledTableCell align="center">
                 <div className="teamCell">
-                  <TeamCell teamName={row.teamName1} teamIcon={row.teamIcon1} />{" "}
-                  <TeamCell teamName={row.teamName2} teamIcon={row.teamIcon2} />{" "}
-                  <TeamCell teamName={row.teamName3} teamIcon={row.teamIcon3} />
+                  <TeamCell
+                    teamName={team.b1}
+                    teamIcon={props.iconMap.get(team.b1)?.brawler}
+                  />
+                  <TeamCell
+                    teamName={team.b2}
+                    teamIcon={props.iconMap.get(team.b2)?.brawler}
+                  />
+                  <TeamCell
+                    teamName={team.b3}
+                    teamIcon={props.iconMap.get(team.b3)?.brawler}
+                  />
                 </div>
               </StyledTableCell>
-              <StyledTableCell align="center">{row.winRate}</StyledTableCell>
-              <StyledTableCell align="center">{row.trueSkill}</StyledTableCell>
+              <StyledTableCell align="center">{team.score}</StyledTableCell>
             </StyledTableRow>
           ))}
         </TableBody>

@@ -1,5 +1,24 @@
+.navBar {
+  z-index: 10000;
+  position: fixed;
+  top: 0;
+  width: 100%;
+}
+
+.banner {
+  position: fixed;
+  margin-top: 25px;
+  z-index: 9999;
+  width: 100%;
+}
+
+.content {
+  padding-top: 5vh;
+}
+
 .allTagsContainerBox {
   display: flex; /* Set the container as flex */
+  margin-bottom: 5%;
 }
 
 .tagContainerBox {
@@ -14,7 +33,8 @@
 .tableDiv {
   width: 75%;
   margin: auto;
-  margin-top: 10%;
+  margin-top: 5%;
+  margin-bottom: 5%;
 }
 
 .brawlerCardTable {
@@ -47,10 +67,37 @@
   width: 100%;
 }
 
+.inputField::placeholder {
+  text-align: center;
+  /* Centering vertically within the input field */
+  line-height: 10px;
+}
+
 .teamCell {
   display: flex;
   justify-content: space-evenly;
   width: 100%;
+}
+
+.standardFlex {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  margin-top: 5%;
+}
+
+.menuGroup {
+  display: flex;
+  flex-direction: row;
+  width: 50%;
+}
+
+.menu {
+  width: 15%;
+}
+
+.lockedIcon {
+  filter: grayscale(100%);
 }
 
 /* .Command-box {

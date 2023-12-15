@@ -7,10 +7,12 @@ import { ControlledInput as InputBox } from "@/components/InputBox";
 import React, { useEffect, useState } from "react";
 import DropDownCheckboxesTags from "@/components/DropDownCheckBox";
 import DropDownCheckBox from "@/components/DropDownCheckBox";
-import ReactTable from "@/components/ReactTable";
+import { BasicTable, team } from "@/components/ReactTable";
 import { BrawlerCard } from "@/components/BrawlerCard";
 import { BrawlerCardTable } from "@/components/BrawlerCardTable";
-import { populateIcons } from "../brawlerIcons";
+import { brawlerURLS, populateIcons } from "../../components/brawlerIcons";
+import ModeDropDown from "@/components/ModeDropDown";
+import MapDropDown from "@/components/MapDropDown";
 
 interface Player {
   tag: string;
@@ -23,9 +25,9 @@ interface Player {
   setHelperText: React.Dispatch<React.SetStateAction<string>>;
   preferredBrawlers: Set<string>; //names
   setPreferredBrawlers: React.Dispatch<React.SetStateAction<Set<string>>>;
+  brawlerBuildMap: Map<string, [[number, string][], [number, string][]]>;
 }
-
-enum Error {
+export enum Error {
   NO_ERROR,
   API_ERROR,
   NO_JSON_ERROR,
@@ -38,8 +40,9 @@ enum Error {
   NO_TAG_ERROR,
 }
 
-const serverURL =
-  "https://159f-2620-6e-6000-3100-6481-ff51-677-dd27.ngrok-free.app";
+// const serverURL =
+//   "https://159f-2620-6e-6000-3100-6481-ff51-677-dd27.ngrok-free.app";
+const serverURL = "http://localhost:8000";
 
 export default function TeamOpt3v3() {
   const usePlayerState = (playerNumber: number): Player => {
@@ -54,6 +57,7 @@ export default function TeamOpt3v3() {
     const [preferredBrawlers, setPreferredBrawlers] = useState<Set<string>>(
       new Set<string>()
     );
+    const [brawlerBuildMap, setBrawlerBuildMap] = useState<Map<string, [[number, string][], [number, string][]]>;
 
     return {
       tag,
@@ -69,18 +73,30 @@ export default function TeamOpt3v3() {
     };
   };
 
+  const [rows, setRows] = useState<team[]>([]);
+  const [iconMap, setIconMap] = useState<Map<string, brawlerURLS>>(
+    new Map<string, brawlerURLS>()
+  );
   const [allBrawlers, setAllBrawlers] = useState<[string, string][]>([]);
+  const [allMapModes, setAllMapModes] = useState<[string, string[]][]>([]);
+  const [currentMode, setCurrentMode] = useState<string>("Select a mode");
+  const [currentMap, setCurrentMap] = useState<string>("Select a map");
   const [errorBanner, setErrorBanner] = useState<Error>(Error.NO_ERROR); // 0 for no banner, 1 for error with api, 2 for [insert here]
   const [errorText, setErrorText] = useState<string>("dxd");
   const player1 = usePlayerState(1);
   const player2 = usePlayerState(2);
   const player3 = usePlayerState(3);
 
+  useEffect(() => {
+    async function initializeIcons() {
+      setIconMap(await populateIcons());
+    }
+    initializeIcons();
+  }, []);
+
   async function getCurrentBrawlers(): Promise<[string, string][]> {
     const fetchJson = await fetch(serverURL + "/getAllBrawlers");
     const currentBrawlers = await fetchJson.json();
-    console.log("raw brawler stuff");
-    console.log(currentBrawlers);
     if (currentBrawlers) {
       if (currentBrawlers.status === "success") {
         return currentBrawlers.data.map(
@@ -93,6 +109,27 @@ export default function TeamOpt3v3() {
     }
     setErrorBanner(Error.API_ERROR);
     return [["Invalid", "Invalid"]];
+  }
+
+  //not sure if this will stay like this, will probably just set the state
+  // instead of returning
+  async function getModeMapData(): Promise<[string, string[]][]> {
+    const fetchJson = await fetch(serverURL + "/getAllMap");
+    const allMapModePairs = await fetchJson.json();
+    if (allMapModePairs) {
+      if (allMapModePairs.status === "success") {
+        // will be in a for each loop
+        const modeMapTuples = [];
+        const modeMaps: [string, string[]] = ["Mode 1", ["Map 1", "Map2"]];
+        modeMapTuples.push(modeMaps);
+        // if we need specific mode order, we can manipulate dictionary
+        // to be an ordered list of maps
+        return modeMapTuples;
+      }
+      setErrorBanner(Error.API_ERROR);
+    }
+    setErrorBanner(Error.API_ERROR);
+    return [];
   }
 
   async function checkValidity() {
@@ -171,6 +208,25 @@ export default function TeamOpt3v3() {
     }
   }
 
+  function getBrawlerList(): Set<string>[] {
+    let brawlerList: Set<string>[] = [];
+    const players = [player1, player2, player3];
+    for (const player of players) {
+      if (!player.isValid || player.preferredBrawlers.size == 0) {
+        brawlerList.push(
+          new Set(
+            allBrawlers.map(([name, id]) => {
+              return name;
+            })
+          )
+        );
+      } else {
+        brawlerList.push(player.preferredBrawlers);
+      }
+    }
+    return brawlerList;
+  }
+
   // fetching the current brawlers available
   useEffect(() => {
     const fetchCurrentBrawlerData = async () => {
@@ -183,15 +239,44 @@ export default function TeamOpt3v3() {
   }, []);
 
   useEffect(() => {
+    const fetchModeMapData = async () => {
+      const data = await getModeMapData();
+      setAllMapModes(data);
+      console.log(allMapModes);
+    };
+    fetchModeMapData();
+  }, []);
+
+  useEffect(() => {
     setErrorText(errorToBannerText(errorBanner));
   }, [errorBanner]);
 
   return (
-    <div>
-      <NavBar />
-      {errorBanner !== Error.NO_ERROR && (
-        <ErrorBanner bannerTitle={"Error:"} bannerText={errorText} />
-      )}
+    <div className="content">
+      <div>
+        <NavBar />
+        {errorBanner !== Error.NO_ERROR && (
+          <ErrorBanner
+            bannerTitle={"Error:"}
+            bannerText={errorText}
+            setErrorBanner={setErrorBanner}
+          />
+        )}
+      </div>
+      <div className="standardFlex">
+        <div className="menu">
+          <ModeDropDown
+            setCurrentMode={setCurrentMode}
+            allMapModes={allMapModes}
+          />
+        </div>
+        <div className="menu">
+          <MapDropDown
+            setCurrentMap={setCurrentMap}
+            allMapModes={allMapModes}
+          />
+        </div>
+      </div>
 
       <div className="allTagsContainerBox">
         <div className="tagContainerBox">
@@ -203,9 +288,12 @@ export default function TeamOpt3v3() {
               setPreferredBrawlers={player1.setPreferredBrawlers}
             />
             <div className="brawlerCardTable">
-              <BrawlerCardTable
-                preferredBrawlers={player1.preferredBrawlers}
-              ></BrawlerCardTable>
+              {iconMap && (
+                <BrawlerCardTable
+                  preferredBrawlers={player1.preferredBrawlers}
+                  brawlerInformation={iconMap}
+                ></BrawlerCardTable>
+              )}
             </div>
           </div>
           <div className="tagBox">
@@ -227,7 +315,16 @@ export default function TeamOpt3v3() {
               preferredBrawlers={player2.preferredBrawlers}
               setPreferredBrawlers={player2.setPreferredBrawlers}
             />
+            <div className="brawlerCardTable">
+              {iconMap && (
+                <BrawlerCardTable
+                  preferredBrawlers={player2.preferredBrawlers}
+                  brawlerInformation={iconMap}
+                ></BrawlerCardTable>
+              )}
+            </div>
           </div>
+
           <div className="tagBox">
             <InputBox
               helperText={player2.helperText}
@@ -247,6 +344,14 @@ export default function TeamOpt3v3() {
               preferredBrawlers={player3.preferredBrawlers}
               setPreferredBrawlers={player3.setPreferredBrawlers}
             />
+            <div className="brawlerCardTable">
+              {iconMap && (
+                <BrawlerCardTable
+                  preferredBrawlers={player3.preferredBrawlers}
+                  brawlerInformation={iconMap}
+                ></BrawlerCardTable>
+              )}
+            </div>
           </div>
           <div className="tagBox">
             <InputBox
@@ -260,38 +365,42 @@ export default function TeamOpt3v3() {
         </div>
       </div>
 
-      <div className="tableDiv">
-        <ReactTable />
-      </div>
-
-      <button
-        tabIndex={9}
-        id="button"
-        onClick={() => {
-          console.log("bad click");
-        }}
-        aria-label="Submit button"
-        aria-description="Interprets the text currently entered in the command input textbox as a command and displays the result of executing the command in the result history.
+      {/* This will be a div containing the menus and button, flex side */}
+      <div className="standardFlex">
+        {/* This div will contain the menus (flex vert) */}
+        <button
+          tabIndex={9}
+          id="button"
+          onClick={() => {
+            console.log(iconMap);
+            const brawlers: Set<string>[] = getBrawlerList();
+            const teams = populateTable(brawlers);
+            setRows(teams);
+          }}
+          aria-label="Submit button"
+          aria-description="Interprets the text currently entered in the command input textbox as a command and displays the result of executing the command in the result history.
         Alternatively, press the Enter key to submit."
-      >
-        Find your best brawlers
-      </button>
+        >
+          Find your best brawlers
+        </button>
+      </div>
+      <div className="tableDiv">
+        <BasicTable rows={rows} iconMap={iconMap} />
+      </div>
     </div>
   );
 }
 
 async function checkPlayerTag(player: Player) {
-  console.log("Reached player tag function");
   let tagJson;
   let tagData;
   tagJson = await fetch(
-    serverURL + "/getPlayerInventory?player_tag=" + player.tag
+    serverURL + "/getPlayerInventory?playerTag=" + player.tag
   );
   tagData = await tagJson.json();
   if (tagData) {
     console.log(tagData);
     if (tagData.status === "success") {
-      console.log("FIRST CHECKPOINT");
       player.setIsValid(true);
       await updateBrawlersOwned(player, tagData.data.brawlers);
       return true;
@@ -305,7 +414,6 @@ async function checkPlayerTag(player: Player) {
         player.setTag(tag);
         player.setHelperText(helperText);
       }, 3000);
-      console.log("SECOND CHECKPOINT");
       return false;
     }
   }
@@ -316,7 +424,22 @@ async function updateBrawlersOwned(player: Player, rawBrawlerData: any) {
   if (rawBrawlerData) {
     if (rawBrawlerData[0]) {
       rawBrawlerData.map((brawler: any) => {
-        player.setBrawlersOwned(player.brawlersOwned.add(brawler.name));
+        const brawlerName: string = brawler.name;
+        player.setBrawlersOwned(player.brawlersOwned.add(brawlerName));
+        let starPowerList: [number, string][] = [];
+        let gadgetList: [number, string][] = [];
+        for (const starPower of brawler.starPowers) {
+          const starPowerInfo: [number, string] = [
+            starPower.name,
+            starPower.id,
+          ];
+          starPowerList.push(starPowerInfo);
+        }
+        for (const gadget of brawler.gadget) {
+          const gadgetInfo: [number, string] = [gadget.name, gadget.id];
+          gadgetList.push(gadgetInfo);
+        }
+        player.brawlerBuildMap.set(brawlerName, [starPowerList, gadgetList]);
       });
     }
   }
@@ -346,4 +469,27 @@ function errorToBannerText(error: Error) {
   }
 
   return "Something went wrong, please try again later";
+}
+
+function populateTable(brawlers: Set<string>[]): team[] {
+  // const data = await fetch("");
+  // const json = await data.json();
+  const team1: team = {
+    b1: "Shelly",
+    b2: "Colt",
+    b3: "Crow",
+    score: 20,
+  };
+  const json = [team1];
+  let teams: team[] = [];
+  for (const brawlerTeam of json) {
+    const teamToBeAdded: team = {
+      b1: brawlerTeam.b1,
+      b2: brawlerTeam.b2,
+      b3: brawlerTeam.b3,
+      score: brawlerTeam.score,
+    };
+    teams.push(teamToBeAdded);
+  }
+  return teams;
 }

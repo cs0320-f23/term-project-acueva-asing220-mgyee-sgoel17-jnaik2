@@ -35,6 +35,34 @@ export default function DropDownCheckboxesTags(boxProps: checkBoxesProps) {
   //   }
   // }
 
+  function isDisabled(option: Map<string, string>) {
+    if (boxProps.brawlersOwned.size == 0) {
+      return false;
+    }
+
+    const brawlerName = option.get("Brawler Name");
+    if (!brawlerName) {
+      return false;
+    }
+
+    return !boxProps.brawlersOwned.has(brawlerName.toUpperCase());
+  }
+
+  function sortOptions() {
+    const disabledOptions: Map<string, string>[] = [];
+    const enabledOptions: Map<string, string>[] = [];
+    allBrawlers.forEach((option) => {
+      if (isDisabled(option)) {
+        disabledOptions.push(option);
+      } else {
+        enabledOptions.push(option);
+      }
+    });
+
+    // Moving enabled options to the top
+    return [...enabledOptions, ...disabledOptions];
+  }
+
   useEffect(() => {
     setAllBrawlers(tuplesToDictionaries(boxProps.currentBrawlers));
   }, [boxProps.currentBrawlers]);
@@ -43,7 +71,10 @@ export default function DropDownCheckboxesTags(boxProps: checkBoxesProps) {
     <Autocomplete
       multiple
       id="checkboxes-tags-demo"
-      options={allBrawlers}
+      options={sortOptions()}
+      getOptionDisabled={(option) => {
+        return isDisabled(option);
+      }}
       disableCloseOnSelect
       // sx={listBoxStyle}
       getOptionLabel={(option) => {
@@ -51,36 +82,17 @@ export default function DropDownCheckboxesTags(boxProps: checkBoxesProps) {
         return brawlerName ? brawlerName : "Unknown";
       }}
       renderOption={(props, option, { selected }) => {
-        const brawlerName = option.get("Brawler Name");
-        if (!brawlerName) {
-          return;
-        }
-        if (boxProps.brawlersOwned.has(brawlerName)) {
-          return (
-            <li {...props}>
-              <Checkbox
-                icon={icon}
-                checkedIcon={checkedIcon}
-                style={{ marginRight: 8 }}
-                checked={selected}
-              />
-              {option.get("Brawler Name")}
-            </li>
-          );
-        } else {
-          return (
-            <li {...props}>
-              <Checkbox
-                icon={icon}
-                checkedIcon={checkedIcon}
-                style={{ marginRight: 8 }}
-                checked={selected}
-                disabled={true}
-              />
-              {option.get("Brawler Name")}
-            </li>
-          );
-        }
+        return (
+          <li {...props}>
+            <Checkbox
+              icon={icon}
+              checkedIcon={checkedIcon}
+              style={{ marginRight: 8 }}
+              checked={selected}
+            />
+            {option.get("Brawler Name")}
+          </li>
+        );
       }}
       renderInput={(params) => (
         <TextField

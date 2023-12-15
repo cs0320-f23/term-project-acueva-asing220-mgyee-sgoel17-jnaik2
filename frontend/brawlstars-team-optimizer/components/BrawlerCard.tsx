@@ -1,31 +1,47 @@
-import { Card, CardContent, CardMedia, Typography } from "@mui/material";
-import { useEffect, useState } from "react";
-import * as React from "react";
-import { brawlerURLS } from "@/app/brawlerIcons";
+"use client";
+import { Card, CardContent, CardMedia, Typography, Grid } from "@mui/material";
+import React, { useEffect, useState } from "react";
+import { brawlerURLS } from "@/components/brawlerIcons";
 
 interface BrawlerCardProps {
   brawlerName: string;
-  brawlerInformation: brawlerURLS | undefined;
+  globalBrawlerLinks: brawlerURLS | undefined;
+  gadgets: [string, number][];
+  starPowers: [string, number][];
+}
+
+function generateIcons(iconMap: Map<string, string>): React.JSX.Element[] {
+  return Array.from(iconMap).map(([iconName, iconLink]) => (
+    <Grid item xs={3}>
+      <img src={iconLink} alt={iconName} className="lockedIcon" />
+    </Grid>
+  ));
 }
 
 export function BrawlerCard(props: BrawlerCardProps) {
-  const brawlerImage: string = props.brawlerInformation.brawler;
-  return (
-    <Card sx={{ display: "flex", maxWidth: 500 }}>
-      <CardMedia
-        sx={{ width: 80, height: 120, objectFit: "scale-down" }}
-        component="img"
-        image={brawlerImage}
-        title={`${props.brawlerName} image`}
-      />
-      <CardContent sx={{ width: 20 }}>
-        <Typography gutterBottom variant="h5" component="div">
-          {props.brawlerName}
-        </Typography>
-        <Typography variant="body2" color="text.secondary">
-          Gadgets/StarsPowers
-        </Typography>
-      </CardContent>
-    </Card>
-  );
+  if (props.globalBrawlerLinks !== undefined) {
+    return (
+      <Card sx={{ display: "flex", maxWidth: 500 }}>
+        <CardMedia
+          sx={{ width: 80, height: 120, objectFit: "scale-down" }}
+          component="img"
+          image={props.globalBrawlerLinks.brawler}
+          title={`${props.brawlerName} image`}
+        />
+        <CardContent>
+          <Grid container spacing={1}>
+            <Grid item xs={12}>
+              <Typography gutterBottom variant="h5" component="div">
+                {props.brawlerName}
+              </Typography>
+            </Grid>
+            <Grid container spacing={1} item xs={12}>
+              {generateIcons(props.globalBrawlerLinks.gadgets)}
+              {generateIcons(props.globalBrawlerLinks.starPowers)}
+            </Grid>
+          </Grid>
+        </CardContent>
+      </Card>
+    );
+  }
 }
