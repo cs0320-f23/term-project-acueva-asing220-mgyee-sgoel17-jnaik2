@@ -1,5 +1,7 @@
 import "@/styles/App.css";
 import { Fragment, useState } from "react";
+import { getAuth, signOut } from "firebase/auth";
+import { auth } from "@/app/firebase";
 import { Disclosure, Menu, Transition } from "@headlessui/react";
 import {
   Bars3Icon,
@@ -7,6 +9,7 @@ import {
   WindowIcon,
   XMarkIcon,
 } from "@heroicons/react/24/outline";
+import React, { useEffect } from "react";
 
 const navigation = [
   { name: "Home", href: "how-to", current: true },
@@ -20,6 +23,8 @@ function classNames(...classes: string[]) {
 }
 
 export default function NavBar() {
+  const [userSignedIn, setUserSignedIn] = useState(false);
+
   const inputString = window.location.href;
   const lastSlashIndex = inputString.lastIndexOf("/");
   if (lastSlashIndex !== -1 && lastSlashIndex < inputString.length - 1) {
@@ -28,6 +33,46 @@ export default function NavBar() {
       tab.current = tab.href === sub ? true : false;
     });
   }
+
+  useEffect(() => {
+    // Check user authentication status when the component mounts
+    const checkAuthentication = () => {
+      if (auth.currentUser) {
+        setUserSignedIn(true);
+      } else {
+        setUserSignedIn(false);
+      }
+    };
+
+    checkAuthentication(); // Initial check
+
+    // Subscribe to authentication state changes
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        setUserSignedIn(true);
+      } else {
+        setUserSignedIn(false);
+      }
+    });
+
+    // Cleanup the subscription when the component unmounts
+    return () => unsubscribe();
+  }, []);
+
+  const getSignOut = () => {
+    console.log("Signing out");
+    const auth = getAuth();
+    signOut(auth)
+      .then(() => {
+        // Sign-out successful.
+        alert("Succesfully signed out");
+        setUserSignedIn(false);
+      })
+      .catch((error: any) => {
+        console.log("Error is: " + error.message);
+        alert("An error occured: " + error.message);
+      });
+  };
 
   return (
     <div className="navBar">
@@ -124,7 +169,8 @@ export default function NavBar() {
                               href="settings"
                               className={classNames(
                                 active ? "bg-gray-100" : "",
-                                "block px-4 py-2 text-sm text-gray-700"
+                                "block px-4 py-2 text-sm text-gray-700",
+                                userSignedIn ? "" : "hidden"
                               )}
                             >
                               Settings
@@ -137,8 +183,10 @@ export default function NavBar() {
                               href="#"
                               className={classNames(
                                 active ? "bg-gray-100" : "",
-                                "block px-4 py-2 text-sm text-gray-700"
+                                "block px-4 py-2 text-sm text-gray-700",
+                                userSignedIn ? "" : "hidden"
                               )}
+                              onClick={getSignOut}
                             >
                               Sign out
                             </a>

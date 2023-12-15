@@ -11,6 +11,8 @@ import { BasicTable, team } from "@/components/ReactTable";
 import { BrawlerCard } from "@/components/BrawlerCard";
 import { BrawlerCardTable } from "@/components/BrawlerCardTable";
 import { brawlerURLS, populateIcons } from "../../components/brawlerIcons";
+import { auth, db } from "../firebase";
+import { doc, getDoc } from "firebase/firestore";
 import ModeDropDown from "@/components/ModeDropDown";
 import MapDropDown from "@/components/MapDropDown";
 
@@ -94,8 +96,40 @@ export default function TeamOpt3v3() {
   const [errorBanner, setErrorBanner] = useState<Error>(Error.NO_ERROR); // 0 for no banner, 1 for error with api, 2 for [insert here]
   const [errorText, setErrorText] = useState<string>("dxd");
   const player1 = usePlayerState(1);
+  // const [player1, setPlayer1] = useState(usePlayerState(1));
   const player2 = usePlayerState(2);
   const player3 = usePlayerState(3);
+
+  // useEffect(() => {
+  //   const fetchUserData = async () => {
+  //     if (auth.currentUser) {
+  //       const user = auth.currentUser;
+  //       const userRef = doc(db, "Users", user.uid);
+
+  //       try {
+  //         const userSnap = await getDoc(userRef);
+  //         if (userSnap.exists()) {
+  //           console.log("Reached inside userSnap exists");
+  //           const userData = userSnap.data();
+  //           const playerTag = userData.playerTag;
+  //           console.log(playerTag);
+  //           if (playerTag) {
+  //             // Update the state of player1 with the fetched player tag
+  //             setPlayer1((prevPlayer1) => ({
+  //               ...prevPlayer1,
+  //               helperText: playerTag,
+  //               tag: playerTag,
+  //             }));
+  //           }
+  //         }
+  //       } catch (error) {
+  //         console.error("Error fetching user data from Firestore:", error);
+  //       }
+  //     }
+  //   };
+
+  //   fetchUserData();
+  // }, []);
 
   async function getCurrentBrawlers(): Promise<[string, string][]> {
     const fetchJson = await fetch(serverURL + "/getAllBrawlers");
