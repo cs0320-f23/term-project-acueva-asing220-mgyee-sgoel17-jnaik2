@@ -57,7 +57,7 @@ export default function TeamOpt3v3() {
     const [preferredBrawlers, setPreferredBrawlers] = useState<Set<string>>(
       new Set<string>()
     );
-    const [brawlerBuildMap, setBrawlerBuildMap] = useState<Map<string, [[number, string][], [number, string][]]>;
+    // const [brawlerBuildMap, setBrawlerBuildMap] = useState<Map<string, [[number, string][], [number, string][]]>>(new Map<string, brawlerURLS>());
 
     return {
       tag,
