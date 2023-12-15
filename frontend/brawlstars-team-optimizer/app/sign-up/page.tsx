@@ -4,6 +4,7 @@ import React, { useEffect, useState, FormEvent } from "react";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth } from "../firebase";
 import { redirect } from "next/navigation";
+import { Link as RouterLink } from "react-router-dom";
 import { useRouter, NextRouter } from "next/router";
 import { withRouter } from "next/router";
 import { useNavigate } from "react-router-dom";
@@ -29,10 +30,11 @@ interface Props {
   // router: AppRouterInstance;
   router: NextRouter;
 }
-function Signup(props: Props) {
+function Signup() {
   // const a = useRouter();
   // const navigate = useNavigate();
   // const history = useHistory();
+  const [signupSuccess, setSignupSuccess] = useState(false);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -45,8 +47,9 @@ function Signup(props: Props) {
         // Signed in
         const user = userCredential.user;
         console.log(user);
-        console.log(props.router);
-        props.router.replace("/how-to");
+        // console.log(props.router);
+        // props.router.replace("/how-to");
+        setSignupSuccess(true);
         // redirect("/howto");
       })
       .catch((error) => {
@@ -133,6 +136,15 @@ function Signup(props: Props) {
               >
                 Sign Up
               </Button>
+              {/* <div>
+                {signupSuccess && (
+                  <RouterLink to="/how-to" style={{ textDecoration: "none" }}>
+                    <Button fullWidth variant="contained" sx={{ mt: 3, mb: 2 }}>
+                      Go to How-To Page
+                    </Button>
+                  </RouterLink>
+                )}
+              </div> */}
               <Grid container justifyContent="flex-end">
                 <Grid item>
                   <Link href="log-in" variant="body2">

@@ -6,15 +6,30 @@ import { brawlerURLS } from "@/components/brawlerIcons";
 
 interface BrawlerCardTableProps {
   preferredBrawlers: Set<string>; //names
-  brawlerInformation: Map<string, brawlerURLS>;
+  globalBrawlerInformation: Map<string, brawlerURLS>;
+  playerBrawlerInformation: Map<
+    string,
+    [[number, string][], [number, string][]]
+  >;
 }
 
 function populateBrawlerCardTable(props: BrawlerCardTableProps) {
   return Array.from(props.preferredBrawlers).map((name) => (
+const brawlerInformation = props.playerBrawlerInformation.get(name)
     <Grid item xs={12}>
       <BrawlerCard
         brawlerName={name}
-        brawlerInformation={props.brawlerInformation.get(name)}
+        globalBrawlerLinks={props.globalBrawlerInformation.get(name)}
+        gadgets={
+          props.playerBrawlerInformation.get(name)
+            ? props.playerBrawlerInformation.get(name)[0]
+            : []
+        }
+        starPowers={
+          props.playerBrawlerInformation.get(name)
+            ? props.playerBrawlerInformation.get(name)[1]
+            : []
+        }
       ></BrawlerCard>
     </Grid>
   ));

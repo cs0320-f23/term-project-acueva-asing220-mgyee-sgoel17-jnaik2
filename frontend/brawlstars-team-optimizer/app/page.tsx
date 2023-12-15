@@ -79,7 +79,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/how-to" element={<Home />} />
         <Route path="/3v3-optimizer" element={<TeamOpt3v3 />} />
-        <Route path="/signup" element={<Signup router={useRouter()} />} />
+        <Route path="/signup" element={<Signup />} />
         <Route path="/login" element={<Login />} />
       </Routes>
     </Router>

@@ -25,7 +25,10 @@ interface Player {
   setHelperText: React.Dispatch<React.SetStateAction<string>>;
   preferredBrawlers: Set<string>; //names
   setPreferredBrawlers: React.Dispatch<React.SetStateAction<Set<string>>>;
-  brawlerBuildMap: Map<string, [[number, string][], [number, string][]]>;
+  brawlerBuildMap: Map<string, [[number, string][], [number, string][]]>; //[starPowers, gadgets]
+  setBrawlerBuildMap: React.Dispatch<
+    React.SetStateAction<Map<string, [[number, string][], [number, string][]]>>
+  >;
 }
 export enum Error {
   NO_ERROR,
@@ -57,7 +60,9 @@ export default function TeamOpt3v3() {
     const [preferredBrawlers, setPreferredBrawlers] = useState<Set<string>>(
       new Set<string>()
     );
-    // const [brawlerBuildMap, setBrawlerBuildMap] = useState<Map<string, [[number, string][], [number, string][]]>>(new Map<string, brawlerURLS>());
+    const [brawlerBuildMap, setBrawlerBuildMap] = useState<
+      Map<string, [[number, string][], [number, string][]]>
+    >(new Map<string, [[number, string][], [number, string][]]>());
 
     return {
       tag,
@@ -70,6 +75,8 @@ export default function TeamOpt3v3() {
       setHelperText,
       preferredBrawlers,
       setPreferredBrawlers,
+      brawlerBuildMap,
+      setBrawlerBuildMap,
     };
   };
 
@@ -291,7 +298,8 @@ export default function TeamOpt3v3() {
               {iconMap && (
                 <BrawlerCardTable
                   preferredBrawlers={player1.preferredBrawlers}
-                  brawlerInformation={iconMap}
+                  globalBrawlerInformation={iconMap}
+                  playerBrawlerInformation={player1.brawlerBuildMap}
                 ></BrawlerCardTable>
               )}
             </div>
@@ -319,7 +327,8 @@ export default function TeamOpt3v3() {
               {iconMap && (
                 <BrawlerCardTable
                   preferredBrawlers={player2.preferredBrawlers}
-                  brawlerInformation={iconMap}
+                  globalBrawlerInformation={iconMap}
+                  playerBrawlerInformation={player2.brawlerBuildMap}
                 ></BrawlerCardTable>
               )}
             </div>
@@ -348,7 +357,8 @@ export default function TeamOpt3v3() {
               {iconMap && (
                 <BrawlerCardTable
                   preferredBrawlers={player3.preferredBrawlers}
-                  brawlerInformation={iconMap}
+                  globalBrawlerInformation={iconMap}
+                  playerBrawlerInformation={player3.brawlerBuildMap}
                 ></BrawlerCardTable>
               )}
             </div>
@@ -423,6 +433,10 @@ async function checkPlayerTag(player: Player) {
 async function updateBrawlersOwned(player: Player, rawBrawlerData: any) {
   if (rawBrawlerData) {
     if (rawBrawlerData[0]) {
+      const brawlerBuildMap = new Map<
+        string,
+        [[number, string][], [number, string][]]
+      >();
       rawBrawlerData.map((brawler: any) => {
         const brawlerName: string = brawler.name;
         player.setBrawlersOwned(player.brawlersOwned.add(brawlerName));
@@ -439,8 +453,9 @@ async function updateBrawlersOwned(player: Player, rawBrawlerData: any) {
           const gadgetInfo: [number, string] = [gadget.name, gadget.id];
           gadgetList.push(gadgetInfo);
         }
-        player.brawlerBuildMap.set(brawlerName, [starPowerList, gadgetList]);
+        brawlerBuildMap.set(brawlerName, [starPowerList, gadgetList]);
       });
+      player.setBrawlerBuildMap(brawlerBuildMap);
     }
   }
 }

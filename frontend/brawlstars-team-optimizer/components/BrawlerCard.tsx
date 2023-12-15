@@ -6,12 +6,13 @@ import { brawlerURLS } from "@/components/brawlerIcons";
 interface BrawlerCardProps {
   brawlerName: string;
   globalBrawlerLinks: brawlerURLS | undefined;
-  gadgets: [string, number][];
-  starPowers: [string, number][];
+  gadgets: [number, string][];
+  starPowers: [number, string][];
 }
 
-function generateIcons(iconMap: Map<string, string>): React.JSX.Element[] {
-  return Array.from(iconMap).map(([iconName, iconLink]) => (
+function generateIcons(iconMap: [number, string][], brawlerLinks: brawlerURLS): React.JSX.Element[] {
+  return iconMap.map(([iconID, iconName]) => (
+
     <Grid item xs={3}>
       <img src={iconLink} alt={iconName} className="lockedIcon" />
     </Grid>
@@ -36,8 +37,8 @@ export function BrawlerCard(props: BrawlerCardProps) {
               </Typography>
             </Grid>
             <Grid container spacing={1} item xs={12}>
-              {generateIcons(props.globalBrawlerLinks.gadgets)}
-              {generateIcons(props.globalBrawlerLinks.starPowers)}
+              {generateIcons(props.gadgets, props.globalBrawlerLinks)}
+              {generateIcons(props.starPowers, props.globalBrawlerLinks)}
             </Grid>
           </Grid>
         </CardContent>
