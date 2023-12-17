@@ -5,12 +5,11 @@ import { createUserWithEmailAndPassword } from "firebase/auth";
 import { auth, db } from "../firebase";
 import { useRouter } from "next/navigation";
 import { doc, setDoc } from "firebase/firestore";
-import { getFirestore, collection, addDoc } from "firebase/firestore";
 import Avatar from "@mui/material/Avatar";
 import Button from "@mui/material/Button";
 import CssBaseline from "@mui/material/CssBaseline";
 import TextField from "@mui/material/TextField";
-import FormControlLabel from "@mui/material/FormControlLabel";
+import { team } from "@/components/ReactTable";
 import Grid from "@mui/material/Grid";
 import Box from "@mui/material/Box";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
@@ -18,7 +17,6 @@ import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import "./sign-up.css";
-import { AppRouterInstance } from "next/dist/shared/lib/app-router-context.shared-runtime";
 import { Link } from "@mui/material";
 
 const defaultTheme = createTheme();
@@ -37,51 +35,24 @@ function Signup() {
     try {
       // Add a new document with a generated ID to the "Users" collection
       console.log(userUid);
+      const teamToBeAdded: team = {
+        b1: "Shelly",
+        b2: "El Primo",
+        b3: "Darryl",
+        score: 20,
+      };
       await setDoc(doc(db, "Users", userUid), {
         uid: userUid,
         email: email,
         playerTag: "",
+        pastTeams: [teamToBeAdded],
       });
-      // db.collection("Users")
-      //   .doc(userUid)
-      //   .set({
-      //     uid: userUid,
-      //     email: email,
-      //     playerTag: "",
-      //   })
-      //   .then(() => {
-      //     console.log("Document successfully written!");
-      //   })
-      //   .catch((error: string) => {
-      //     console.error("Error writing document: ", error);
-      //   });
     } catch (error) {
       console.error("Error adding document: ", error);
     }
   };
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
-
-    // await createUserWithEmailAndPassword(auth, email, password)
-    //   .then((userCredential) => {
-    //     // Signed in
-    //     const user = userCredential.user;
-    //     const id = user.uid;
-    //     console.log(user);
-    //     console.log(id);
-    //     await addUser(id);
-    //     // console.log(props.router);
-    //     router.replace("/how-to");
-    //     // navigate("/how-to");
-    //     setSignupSuccess(true);
-    //     // redirect("/howto");
-    //   })
-    //   .catch((error) => {
-    //     const errorCode = error.code;
-    //     const errorMessage = error.message;
-    //     console.log(errorCode, errorMessage);
-    //     alert("The error code is: " + errorMessage);
-    //   });
 
     try {
       const userCredential = await createUserWithEmailAndPassword(

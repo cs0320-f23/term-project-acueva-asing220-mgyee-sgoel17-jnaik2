@@ -30,6 +30,12 @@
   width: 100%;
 }
 
+.playerButton {
+  display: flex;
+  justify-content: space-evenly;
+  margin-top: 50px;
+}
+
 .tableDiv {
   width: 75%;
   margin: auto;
@@ -96,6 +102,11 @@
   width: 15%;
 }
 
+.optimizerButton {
+  border: 2px solid black;
+  border-radius: 10%;
+  padding: 10px;
+}
 .lockedIcon {
   filter: grayscale(100%);
   width: 60px;

@@ -12,9 +12,10 @@ import { BrawlerCard } from "@/components/BrawlerCard";
 import { BrawlerCardTable } from "@/components/BrawlerCardTable";
 import { brawlerURLS, populateIcons } from "../../components/brawlerIcons";
 import { auth, db } from "../firebase";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
 import ModeDropDown from "@/components/ModeDropDown";
 import MapDropDown from "@/components/MapDropDown";
+import PastTeams from "../past-teams/page";
 
 interface Player {
   tag: string;
@@ -89,6 +90,32 @@ export default function TeamOpt3v3() {
   const [iconMap, setIconMap] = useState<Map<string, brawlerURLS>>(
     new Map<string, brawlerURLS>()
   );
+  const [signedIn, setSignedIn] = useState<boolean>(false);
+
+  useEffect(() => {
+    // Check user authentication status when the component mounts
+    const checkAuthentication = () => {
+      if (auth.currentUser) {
+        setSignedIn(true);
+      } else {
+        setSignedIn(false);
+      }
+    };
+
+    checkAuthentication(); // Initial check
+
+    // Subscribe to authentication state changes
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      if (user) {
+        setSignedIn(true);
+      } else {
+        setSignedIn(false);
+      }
+    });
+
+    // Cleanup the subscription when the component unmounts
+    return () => unsubscribe();
+  }, []);
   const [allBrawlers, setAllBrawlers] = useState<[string, string][]>([]);
   const [allMapModes, setAllMapModes] = useState<[string, string[]][]>([]);
   const [currentMode, setCurrentMode] = useState<string>("Select a mode");
@@ -259,6 +286,30 @@ export default function TeamOpt3v3() {
         return;
       }
     }
+  }
+
+  async function getPlayerTag() {
+    if (auth.currentUser) {
+      const user = auth.currentUser;
+      const userRef = doc(db, "Users", user?.uid);
+      const userDoc = await getDoc(userRef);
+      if (userDoc.exists()) {
+        const data = userDoc.data();
+        const playerTag = data.playerTag;
+        if (playerTag == "") {
+          alert(
+            "You have not registered a player tag yet. Please do so by going to settings."
+          );
+          return;
+        }
+        console.log(playerTag);
+        player1.setTag(playerTag);
+      } else {
+        console.log("No profile exists for this user");
+      }
+    }
+
+    return;
   }
 
   function getBrawlerList(): Set<string>[] {
@@ -438,10 +489,17 @@ export default function TeamOpt3v3() {
       {/* This will be a div containing the menus and button, flex side */}
       <div className="standardFlex">
         {/* This div will contain the menus (flex vert) */}
+        {auth.currentUser && (
+          <div className="optimizerButton" onClick={getPlayerTag}>
+            <button>Enter to get your stored player tag for Player 1</button>
+          </div>
+        )}
         <button
           tabIndex={9}
           id="button"
-          onClick={() => {
+          className="optimizerButton"
+          onClick={async () => {
+            let teamsToBeAdded;
             const setTable = async () => {
               const brawlers: Set<string>[] = getBrawlerList();
               const teams = await populateTable(
@@ -449,9 +507,23 @@ export default function TeamOpt3v3() {
                 currentMode,
                 currentMap
               );
+              teamsToBeAdded = teams;
               setRows(teams);
             };
             setTable();
+            if (auth.currentUser) {
+              const userRef = doc(db, "Users", auth.currentUser?.uid);
+
+              const userDoc = await getDoc(userRef);
+
+              if (userDoc.exists()) {
+                const currentPastTeams: team[] = userDoc.data().PastTeams || [];
+                const newPastTeams = [...currentPastTeams, ...[teamsToBeAdded]];
+                await updateDoc(userRef, {
+                  pastTeams: newPastTeams,
+                });
+              }
+            }
           }}
           aria-label="Submit button"
           aria-description="Interprets the text currently entered in the command input textbox as a command and displays the result of executing the command in the result history.
