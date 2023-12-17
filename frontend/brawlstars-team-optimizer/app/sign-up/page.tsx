@@ -35,17 +35,17 @@ function Signup() {
     try {
       // Add a new document with a generated ID to the "Users" collection
       console.log(userUid);
-      const teamToBeAdded: team = {
-        b1: "Shelly",
-        b2: "El Primo",
-        b3: "Darryl",
-        score: 20,
-      };
+      // const teamToBeAdded: team = {
+      //   b1: "Shelly",
+      //   b2: "El Primo",
+      //   b3: "Darryl",
+      //   score: 20,
+      // };
       await setDoc(doc(db, "Users", userUid), {
         uid: userUid,
         email: email,
         playerTag: "",
-        pastTeams: [teamToBeAdded],
+        pastTeams: [],
       });
     } catch (error) {
       console.error("Error adding document: ", error);
