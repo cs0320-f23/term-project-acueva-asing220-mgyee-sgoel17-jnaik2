@@ -9,11 +9,11 @@ interface BrawlerCardProps {
   gadgets: [number, string][];
   starPowers: [number, string][];
   defaultID: boolean;
+  playerNumber: number;
 }
 
 function generateIcons(props: BrawlerCardProps): React.JSX.Element[] {
   let gridArray: React.JSX.Element[] = [];
-  console.log(props.globalBrawlerLinks.gadgets);
   for (const [globalStarPowerInfo, starPowerIcon] of props.globalBrawlerLinks
     .starPowers) {
     const icon: React.JSX.Element = (
@@ -61,7 +61,7 @@ function generateIcons(props: BrawlerCardProps): React.JSX.Element[] {
 export function BrawlerCard(props: BrawlerCardProps) {
   if (props.globalBrawlerLinks !== undefined) {
     return (
-      <Card sx={{ display: "flex", maxWidth: 500 }}>
+      <Card sx={{ display: "flex", maxWidth: 500 }} aria-label={`Player ${props.playerNumber} Card for ${props.brawlerName}`}>
         <CardMedia
           sx={{ width: 60, height: 100, objectFit: "scale-down" }}
           component="img"

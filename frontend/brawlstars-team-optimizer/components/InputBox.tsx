@@ -14,6 +14,7 @@ interface ControlledInputProps {
   value: string;
   setValue: Dispatch<SetStateAction<string>>;
   setValid: Dispatch<SetStateAction<boolean>>;
+  playerNumber: number;
 }
 
 /**
@@ -32,8 +33,8 @@ export function ControlledInput(props: ControlledInputProps) {
       onChange={(ev) => {
         props.setValid(false);
         props.setValue(ev.target.value);
-      }} 
-      aria-label={"Input box for a player tag"}
+      }}
+      aria-label={`Input box for player ${props.playerNumber} tag`}
       tabIndex={2}
       onKeyDown={(event: React.KeyboardEvent<HTMLDivElement>) => {
         if (event.key.toLowerCase() === "enter") {

@@ -15,6 +15,7 @@ interface checkBoxesProps {
   brawlersOwned: Set<string>;
   preferredBrawlers: Set<string>;
   setPreferredBrawlers: React.Dispatch<React.SetStateAction<Set<string>>>;
+  playerNumber: number;
 }
 
 export default function DropDownCheckboxesTags(boxProps: checkBoxesProps) {
@@ -69,6 +70,7 @@ export default function DropDownCheckboxesTags(boxProps: checkBoxesProps) {
 
   return (
     <Autocomplete
+      aria-label={`Preferred Brawlers for Player ${boxProps.playerNumber}`}
       multiple
       id="checkboxes-tags-demo"
       options={sortOptions()}
@@ -83,12 +85,14 @@ export default function DropDownCheckboxesTags(boxProps: checkBoxesProps) {
       }}
       renderOption={(props, option, { selected }) => {
         return (
-          <li {...props}>
+          <li {...props}
+            aria-label={option.get("Brawler Name")}>
             <Checkbox
               icon={icon}
               checkedIcon={checkedIcon}
               style={{ marginRight: 8 }}
               checked={selected}
+              aria-label={option.get("Brawler Name")}
             />
             {option.get("Brawler Name")}
           </li>

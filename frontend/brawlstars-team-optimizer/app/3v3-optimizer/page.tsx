@@ -32,6 +32,7 @@ interface Player {
   setBrawlerBuildMap: React.Dispatch<
     React.SetStateAction<Map<string, [[number, string][], [number, string][]]>>
   >;
+  playerNumber: number;
 }
 export enum Error {
   NO_ERROR,
@@ -80,6 +81,7 @@ export default function TeamOpt3v3() {
       setPreferredBrawlers,
       brawlerBuildMap,
       setBrawlerBuildMap,
+      playerNumber,
     };
   };
 
@@ -401,6 +403,7 @@ export default function TeamOpt3v3() {
               brawlersOwned={player1.brawlersOwned}
               preferredBrawlers={player1.preferredBrawlers}
               setPreferredBrawlers={player1.setPreferredBrawlers}
+              playerNumber={player1.playerNumber}
             />
             <div className="brawlerCardTable">
               {iconMap && (
@@ -409,6 +412,7 @@ export default function TeamOpt3v3() {
                   globalBrawlersInformation={iconMap}
                   playerBrawlersInformation={player1.brawlerBuildMap}
                   defaultID={player1.isValid}
+                                    playerNumber={player1.playerNumber}
                 ></BrawlerCardTable>
               )}
             </div>
@@ -420,6 +424,7 @@ export default function TeamOpt3v3() {
               setValue={player1.setTag}
               handleSubmit={() => checkValidity()}
               setValid={player1.setIsValid}
+              playerNumber={player1.playerNumber}
             />
           </div>
         </div>
@@ -431,6 +436,7 @@ export default function TeamOpt3v3() {
               brawlersOwned={player2.brawlersOwned}
               preferredBrawlers={player2.preferredBrawlers}
               setPreferredBrawlers={player2.setPreferredBrawlers}
+              playerNumber={player2.playerNumber}
             />
             <div className="brawlerCardTable">
               {iconMap && (
@@ -439,6 +445,7 @@ export default function TeamOpt3v3() {
                   globalBrawlersInformation={iconMap}
                   playerBrawlersInformation={player2.brawlerBuildMap}
                   defaultID={player2.isValid}
+                  playerNumber={player2.playerNumber}
                 ></BrawlerCardTable>
               )}
             </div>
@@ -451,6 +458,7 @@ export default function TeamOpt3v3() {
               setValue={player2.setTag}
               handleSubmit={() => checkValidity()}
               setValid={player2.setIsValid}
+              playerNumber={player2.playerNumber}
             />
           </div>
         </div>
@@ -462,6 +470,7 @@ export default function TeamOpt3v3() {
               brawlersOwned={player3.brawlersOwned}
               preferredBrawlers={player3.preferredBrawlers}
               setPreferredBrawlers={player3.setPreferredBrawlers}
+              playerNumber={player3.playerNumber}
             />
             <div className="brawlerCardTable">
               {iconMap && (
@@ -470,6 +479,7 @@ export default function TeamOpt3v3() {
                   globalBrawlersInformation={iconMap}
                   playerBrawlersInformation={player3.brawlerBuildMap}
                   defaultID={player3.isValid}
+                                    playerNumber={player3.playerNumber}
                 ></BrawlerCardTable>
               )}
             </div>
@@ -481,6 +491,7 @@ export default function TeamOpt3v3() {
               setValue={player3.setTag}
               handleSubmit={() => checkValidity()}
               setValid={player3.setIsValid}
+              playerNumber={player3.playerNumber}
             />
           </div>
         </div>
@@ -662,8 +673,22 @@ async function populateTable(
           continue;
         }
         let average: number = -100;
-        if (mode !== "") {
-          if (map !== "") {
+        if (mode !== "Select a mode") {
+          if (
+            !list1[i]["map-ratings"][mode] ||
+            !list2[j]["map-ratings"][mode] ||
+            !list3[k]["map-ratings"][mode]
+          ) {
+            continue;
+          }
+          if (map !== "Select a map") {
+            if (
+              !list1[i]["map-ratings"][mode][map] ||
+              !list2[j]["map-ratings"][mode][map] ||
+              !list3[k]["map-ratings"][mode][map]
+            ) {
+              continue;
+            }
             average =
               (list1[i]["map-ratings"][mode][map]["combined-exposure"] +
                 list2[j]["map-ratings"][mode][map]["combined-exposure"] +

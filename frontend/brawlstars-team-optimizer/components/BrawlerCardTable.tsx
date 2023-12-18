@@ -13,20 +13,15 @@ interface BrawlerCardTableProps {
     [[number, string][], [number, string][]]
   >;
   defaultID: boolean;
+  playerNumber: number;
 }
 
 function populateBrawlerCardTable(props: BrawlerCardTableProps) {
-  console.log("LOOK HERE");
-  console.log(props.defaultID);
   return Array.from(props.preferredBrawlers).map((name) => {
     const playerBrawlerInformation = props.playerBrawlersInformation.get(
       name.toUpperCase()
     );
     const globalBrawlerInformation = props.globalBrawlersInformation.get(name);
-    // console.log("LOOK HERE TEST");
-    // console.log(props.playerBrawlersInformation);
-    // console.log(name);
-    // console.log(globalBrawlerInformation);
     if (globalBrawlerInformation) {
       return (
         <Grid item xs={12} key={name}>
@@ -40,6 +35,7 @@ function populateBrawlerCardTable(props: BrawlerCardTableProps) {
               playerBrawlerInformation ? playerBrawlerInformation[0] : []
             }
             defaultID={props.defaultID}
+            playerNumber={props.playerNumber}
           />
         </Grid>
       );
@@ -49,7 +45,11 @@ function populateBrawlerCardTable(props: BrawlerCardTableProps) {
 
 export function BrawlerCardTable(props: BrawlerCardTableProps) {
   return (
-    <Grid container spacing={1}>
+    <Grid
+      container
+      spacing={1}
+      aria-label={`Brawler Card Table for Player ${props.playerNumber}`}
+    >
       {populateBrawlerCardTable(props)}
     </Grid>
   );

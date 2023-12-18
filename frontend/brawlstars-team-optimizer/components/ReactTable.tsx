@@ -69,9 +69,10 @@ interface Props {
 }
 
 export function BasicTable(props: Props) {
+  const count = 0;
   return (
     <TableContainer component={Paper}>
-      <Table sx={{ minWidth: 650 }} aria-label="simple table">
+      <Table sx={{ minWidth: 650 }} aria-label="brawler result table">
         <TableHead>
           <StyledTableRow>
             <StyledTableCell align="center">Team</StyledTableCell>
@@ -83,7 +84,7 @@ export function BasicTable(props: Props) {
             <StyledTableRow
               sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
             >
-              <StyledTableCell align="center">
+              <StyledTableCell align="center" aria-label="teamCombo">
                 <div className="teamCell">
                   <TeamCell
                     teamName={team.b1}
