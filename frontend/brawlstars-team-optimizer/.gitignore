@@ -1,36 +1,45 @@
+backend/server/private/
+**/__pycache__/
+
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
+# API KEYS ---- NAME OF FILE MUST BE KEYS.PY
+**/keys*
+
+# PyCharm
+.idea/
+
 # dependencies
-/node_modules
-/.pnp
-.pnp.js
-.yarn/install-state.gz
+frontend/brawlstars-team-optimizer/node_modules
+frontend/brawlstars-team-optimizer/.pnp
+frontend/brawlstars-team-optimizer/.pnp.js
+frontend/brawlstars-team-optimizer/.yarn/install-state.gz
 
 # testing
-/coverage
+frontend/brawlstars-team-optimizer/coverage
 
 # next.js
-/.next/
-/out/
+frontend/brawlstars-team-optimizer/.next/
+frontend/brawlstars-team-optimizer/out/
 
 # production
-/build
+frontend/brawlstars-team-optimizer/build
 
 # misc
-.DS_Store
-*.pem
+frontend/brawlstars-team-optimizer/.DS_Store
+frontend/brawlstars-team-optimizer/*.pem
 
 # debug
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
+frontend/brawlstars-team-optimizer/npm-debug.log*
+frontend/brawlstars-team-optimizer/yarn-debug.log*
+frontend/brawlstars-team-optimizer/yarn-error.log*
 
 # local env files
-.env*.local
+frontend/brawlstars-team-optimizer/.env*.local
 
 # vercel
-.vercel
+frontend/brawlstars-team-optimizer/.vercel
 
 # typescript
-*.tsbuildinfo
-next-env.d.ts
+frontend/brawlstars-team-optimizer/*.tsbuildinfo
+frontend/brawlstars-team-optimizer/next-env.d.ts

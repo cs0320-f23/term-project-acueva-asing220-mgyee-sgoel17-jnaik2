@@ -1,0 +1,9 @@
+.profile-card-div {
+  margin-top: 200px;
+}
+
+.profile-div {
+  display: flex;
+  flex-direction: column; /* Stack children vertically */
+  align-items: center; /* Center items horizontally */
+}

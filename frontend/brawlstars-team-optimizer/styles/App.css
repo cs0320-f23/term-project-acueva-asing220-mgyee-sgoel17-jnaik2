@@ -1,0 +1,143 @@
+.navBar {
+  z-index: 10000;
+  position: fixed;
+  top: 0;
+  width: 100%;
+}
+
+.banner {
+  position: fixed;
+  margin-top: 25px;
+  z-index: 9999;
+  width: 100%;
+}
+
+.content {
+  padding-top: 5vh;
+}
+
+.allTagsContainerBox {
+  display: flex; /* Set the container as flex */
+  margin-bottom: 5%;
+}
+
+.tagContainerBox {
+  display: flex;
+  flex-direction: column;
+  margin-top: 5%;
+  margin-left: 2%;
+  margin-right: 2%;
+  width: 100%;
+}
+
+.playerButton {
+  display: flex;
+  justify-content: space-evenly;
+  margin-top: 50px;
+}
+
+.tableDiv {
+  width: 75%;
+  margin: auto;
+  margin-top: 5%;
+  margin-bottom: 5%;
+}
+
+.brawlerCardTable {
+  overflow: auto;
+  height: 350px;
+  margin-top: 10%;
+}
+
+.checkBox {
+  height: 100%;
+  margin-bottom: 20%;
+}
+
+.checkBoxComponent {
+  width: 100%;
+}
+
+.MuiAutocomplete-listbox {
+  max-height: 100%;
+}
+
+.tagBox {
+  /* flex: 1;
+  margin: 5px; 
+  padding: 10px; */
+  margin: 5px;
+}
+
+.inputField {
+  width: 100%;
+}
+
+.inputField::placeholder {
+  text-align: center;
+  /* Centering vertically within the input field */
+  line-height: 10px;
+}
+
+.teamCell {
+  display: flex;
+  justify-content: space-evenly;
+  width: 100%;
+}
+
+.standardFlex {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+  margin-top: 5%;
+}
+
+.menuGroup {
+  display: flex;
+  flex-direction: row;
+  width: 50%;
+}
+
+.menu {
+  width: 15%;
+}
+
+.optimizerButton {
+  border: 2px solid black;
+  border-radius: 10%;
+  padding: 10px;
+}
+.lockedIcon {
+  filter: grayscale(100%);
+  width: 60px;
+}
+
+.unlockedIcon {
+  filter: grayscale(0%);
+  width: 60px;
+}
+
+.profile-player-playerTag {
+  margin-top: 100px;
+}
+
+/* .Command-box {
+  z-index:1;
+  background-color: white;
+  position: absolute;
+  height: 5%;
+  width: 50%;
+  bottom: 0%;
+  left:25%;
+}
+
+.Data-box {
+  background-color: #a13030;
+  color: white;
+  z-index:1;
+  position: absolute;
+  height: 25%;
+  width: 30%;
+  top: 0%;
+  overflow: auto;
+} */
