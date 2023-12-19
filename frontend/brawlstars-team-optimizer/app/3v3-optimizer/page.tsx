@@ -814,11 +814,24 @@ async function populateTable(
   const averagesList = [...averages];
   averagesList.sort((a, b) => b[1] - a[1]);
 
-  const topTeams: [string[], number][] = averagesList
-    .slice(0, 10)
-    .map((team) => [[...team[0]], team[1]]);
+  let topTeams: [string[], number][] = averagesList.slice(0, 1000)
+    .map((team) => [[...team[0]].sort(), team[1]]);
 
   console.log(topTeams);
+  // need to remove deeply equal entries from topTeams, can you help
+  topTeams = topTeams.filter(
+      (team) => {
+        for (const team2 of topTeams) {
+          if (team[1] === team2[1]) {
+            return team[0] === team2[0];
+          }
+        }
+        return true;
+      })
+
+
+  console.log(topTeams);
+  topTeams.slice(0, 100);
   // const team1: team = {
   //   b1: "Shelly",
   //   b2: "Colt",
