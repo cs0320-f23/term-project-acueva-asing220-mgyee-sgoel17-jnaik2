@@ -7,12 +7,17 @@ import { BasicTable, team } from "@/components/ReactTable";
 import { auth, db } from "../firebase";
 import { doc, getDoc } from "firebase/firestore";
 
+/**
+ * Function to render PastTeams Component on screen
+ * @return - PastTeams Component to return on screen
+ */
 function PastTeams() {
   const [rows, setRows] = useState<team[]>([]);
   const [iconMap, setIconMap] = useState<Map<string, brawlerURLS>>(
     new Map<string, brawlerURLS>()
   );
 
+  // Hook effect to initialize icons when the component first loads.
   useEffect(() => {
     async function initializeIcons() {
       const brawlerLinks = await populateIcons();
@@ -23,6 +28,7 @@ function PastTeams() {
     initializeIcons();
   }, []);
 
+  // Hook effect to detect for authentican changes in user
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -35,6 +41,7 @@ function PastTeams() {
     return () => unsubscribe();
   }, []);
 
+  // Async function to get pastTeams from firestore database and set table rows to contian those teams
   async function getTeamsForRows() {
     if (auth.currentUser) {
       const user = auth.currentUser;
@@ -54,6 +61,8 @@ function PastTeams() {
       }
     }
   }
+
+  // Rendering the PastTeams Component using BasicTable component
   return (
     <div className="profile-div">
       <NavBar />
@@ -64,4 +73,5 @@ function PastTeams() {
   );
 }
 
+// Exporting PastTeams Component
 export default PastTeams;

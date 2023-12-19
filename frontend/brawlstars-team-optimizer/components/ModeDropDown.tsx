@@ -10,6 +10,11 @@ interface DropDownProps {
   setCurrentMode: React.Dispatch<React.SetStateAction<string>>;
 }
 
+/**
+ * Produces a drop down menu for available modes
+ * @param props DropDownProps which lists the available modes for a specific mode
+ * @returns Renders a drop down checkbox menu that can be singly selected
+ */
 export default function ModeDropDown(props: DropDownProps) {
   const [value, setValue] = useState<string>("");
 
@@ -43,6 +48,11 @@ export default function ModeDropDown(props: DropDownProps) {
   );
 }
 
+/**
+ * Produces a camel case string
+ * @param str string to camel case
+ * @returns A camel cased string
+ */
 function camelToTitleCase(str: string) {
   const camelCaseString = str.match(/[A-Z]*[a-z]+/g);
   console.log(camelCaseString);

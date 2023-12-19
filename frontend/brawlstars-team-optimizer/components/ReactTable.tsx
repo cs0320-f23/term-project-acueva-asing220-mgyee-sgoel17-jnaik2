@@ -11,26 +11,6 @@ import TeamCell from "@/components/TeamIcon";
 import "@/styles/App.css";
 import { brawlerURLS } from "./brawlerIcons";
 
-// function createData(
-//   teamName1: string,
-//   teamName2: string,
-//   teamName3: string,
-//   winRate: number,
-//   trueSkill: number
-// ) {
-//   return {
-//     id: (teamName1 + teamName2 + teamName3).toLowerCase().replace(/\s+/g, "-"),
-//     teamName1,
-//     teamIcon1: "https://cdn.brawlify.com/profile/28000000.png?v=1", // Replace with the actual icon URL
-//     teamName2,
-//     teamIcon2: "https://cdn.brawlify.com/profile/28000000.png?v=1", // Replace with the actual icon URL
-//     teamName3,
-//     teamIcon3: "https://cdn.brawlify.com/profile/28000000.png?v=1", // Replace with the actual icon URL
-//     winRate,
-//     trueSkill,
-//   };
-// }
-
 const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
     backgroundColor: theme.palette.common.black,
@@ -51,11 +31,6 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
   },
 }));
 
-// const rows = [
-//   createData("Brawler 1", "Brawler 2", "Brawler 3", 10, 4),
-//   createData("Brawler 4", "Brawler 5", "Brawler 6", 1, 42),
-// ];
-
 export interface team {
   b1: string;
   b2: string;
@@ -68,6 +43,11 @@ interface Props {
   iconMap: Map<string, brawlerURLS>;
 }
 
+/**
+ * Produces a table containing the best team compositions
+ * @param playerTag the string player tag
+ * @returns A rendered table containing the best team compositions
+ */
 export function BasicTable(props: Props) {
   const count = 0;
   return (

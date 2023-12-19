@@ -11,6 +11,11 @@ interface DropDownProps {
   setCurrentMap: React.Dispatch<React.SetStateAction<string>>;
 }
 
+/**
+ * Produces a drop down menu for available maps
+ * @param props DropDownProps which lists the available maps for a specific mode
+ * @returns Renders a drop down checkbox menu that can be singly selected
+ */
 export default function MapDropDown(props: DropDownProps) {
   const [value, setValue] = useState<string>("");
   let viableMaps: string[] = [];
@@ -46,6 +51,11 @@ export default function MapDropDown(props: DropDownProps) {
   );
 }
 
+/**
+ * Produces a camel case string
+ * @param str string to camel case
+ * @returns A camel cased string
+ */
 function camelToTitleCase(str: string) {
   const camelCaseString = str.match(/[A-Z]*[a-z]+/g);
   console.log(camelCaseString);

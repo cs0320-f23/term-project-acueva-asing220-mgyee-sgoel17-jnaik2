@@ -17,13 +17,23 @@ import Container from "@mui/material/Container";
 import { Link } from "@mui/material";
 import "./login.css";
 
+// Creating defaultTheme using Materials Ui
 const defaultTheme = createTheme();
 
+/**
+ * Defining sign up functional component to return to render
+ * @return LogInComponent: Returns Login component to render on screen
+ */
 const Login = () => {
   const router = useRouter();
   const [email, setEmail] = useState("Please enter an email address");
   const [password, setPassword] = useState("Please enter a password");
 
+  /**
+   * Function that handles the onSubmit function for the button. Checks whether the user exists in our database, and if they do, whether the credentials
+   * are correct. If so, we send them to the how-to page, otherwise we alert them with the corresponding error message.
+   * @param {FormEvent} e - The form event triggered by the form submission.
+   */
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
@@ -62,6 +72,7 @@ const Login = () => {
       });
   };
 
+  // Rendering the LogIn component using MaterialsUi grid
   return (
     <div className="logInDiv">
       {/* <NavBar /> */}
@@ -171,4 +182,5 @@ const Login = () => {
   );
 };
 
+// Export the LogIn component for rendering
 export default Login;

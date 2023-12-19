@@ -22,6 +22,10 @@ function classNames(...classes: string[]) {
   return classes.filter(Boolean).join(" ");
 }
 
+/**
+ * Produces a navigation bar element
+ * @returns Renders a navigation bar element containing all page links
+ */
 export default function NavBar() {
   const [userSignedIn, setUserSignedIn] = useState(false);
 

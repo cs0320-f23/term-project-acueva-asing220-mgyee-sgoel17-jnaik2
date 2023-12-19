@@ -18,6 +18,13 @@ interface checkBoxesProps {
   playerNumber: number;
 }
 
+/**
+ * Produces a drop down checkbox menu that has selectable Brawlers
+ * @param props checkBoxesProp that includes a list of available brawlers and
+ * player available
+ * @returns Renders a drop down checkbox menu that can be typed in and selected
+ * for brawlers
+ */
 export default function DropDownCheckboxesTags(boxProps: checkBoxesProps) {
   const [allBrawlers, setAllBrawlers] = useState<Map<string, string>[]>([]);
   function tuplesToDictionaries(currentBrawlerNameIDPairs: [string, string][]) {
@@ -28,13 +35,6 @@ export default function DropDownCheckboxesTags(boxProps: checkBoxesProps) {
       return map;
     });
   }
-  // const listBoxStyle = {
-  //   "&:MuiAutocomplete-listbox": {
-  //     height: 50px,
-  //   overflow: auto,
-
-  //   }
-  // }
 
   function isDisabled(option: Map<string, string>) {
     if (boxProps.brawlersOwned.size == 0) {
@@ -85,8 +85,7 @@ export default function DropDownCheckboxesTags(boxProps: checkBoxesProps) {
       }}
       renderOption={(props, option, { selected }) => {
         return (
-          <li {...props}
-            aria-label={option.get("Brawler Name")}>
+          <li {...props} aria-label={option.get("Brawler Name")}>
             <Checkbox
               icon={icon}
               checkedIcon={checkedIcon}
@@ -124,6 +123,11 @@ export default function DropDownCheckboxesTags(boxProps: checkBoxesProps) {
   );
 }
 
+/**
+ * Produces a titled case string
+ * @param str string to title case
+ * @returns A titled case string
+ */
 export function toTitleCase(str: string): string {
   return str.toLowerCase().replace(/(?:^|\s)\w/g, (match) => {
     return match.toUpperCase();

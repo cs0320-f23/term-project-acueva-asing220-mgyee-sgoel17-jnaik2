@@ -6,21 +6,33 @@ import { doc, getDoc } from "firebase/firestore";
 import "./profile.css";
 import OutlinedCard from "@/components/ProfileCard";
 
+/**
+ * Function to render Profile Component on screen
+ * @return - Profile Component to return on screen
+ */
 function Profile() {
   const [playerTag, setPlayerTag] = useState("");
+
+  // Hook effect to listen for changes in authentication of user
   useEffect(() => {
-    console.log("Reached here");
+    // console.log("Reached here");
+
+    /**
+     * Checks if user is authorized, and if it is, get their playerTag from firestore and display to user. If not signed in,
+     * return that statement to user
+     * @param {Object} user - Current user of webapp
+     */
     const unsubscribe = auth.onAuthStateChanged(async (user) => {
       if (user) {
-        console.log("Reached inside");
+        // console.log("Reached inside");
         // User is signed in, get user data from Firestore
         // const userDoc = await getDoc(doc(db, "users", user.uid));
         const userRef = doc(db, "Users", user.uid);
         const userSnap = await getDoc(userRef);
-        console.log("Reached here 2");
+        // console.log("Reached here 2");
         if (userSnap.exists()) {
-          console.log("Reached inside exists block");
-          console.log(userSnap.data().playerTag);
+          // console.log("Reached inside exists block");
+          // console.log(userSnap.data().playerTag);
           if (userSnap.data().playerTag) {
             setPlayerTag(userSnap.data().playerTag);
           } else {
@@ -31,13 +43,16 @@ function Profile() {
           console.log("user doc not exist");
         }
       } else {
-        console.log("Reached inside not exists block");
+        // console.log("Reached inside not exists block");
         setPlayerTag("No one is signed in");
       }
     });
 
     return () => unsubscribe();
   }, []);
+
+  // Rendering the Profile Component using OutlinedCard and ProfileCard component
+
   return (
     <div className="profile-div">
       <NavBar />
@@ -48,4 +63,5 @@ function Profile() {
   );
 }
 
+// Exporting Profile Component
 export default Profile;

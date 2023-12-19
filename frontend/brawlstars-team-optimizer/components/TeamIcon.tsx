@@ -8,6 +8,9 @@ interface TeamCellProps {
   teamIcon: string;
 }
 
+/**
+ * Produces a cell in the table for team compositions
+ */
 const TeamCell = ({ teamName, teamIcon }) => (
   <TableRow>
     <TableCell component="th" scope="row">

@@ -2,7 +2,6 @@
 import "@/styles/App.css";
 import NavBar from "@/components/NavBar";
 import { Banner as ErrorBanner } from "@/components/Banner";
-import CheckBoxes from "@/components/checkboxes";
 import { ControlledInput as InputBox } from "@/components/InputBox";
 import React, { useEffect, useState } from "react";
 import DropDownCheckboxesTags from "@/components/DropDownCheckBox";
@@ -17,6 +16,10 @@ import ModeDropDown from "@/components/ModeDropDown";
 import MapDropDown from "@/components/MapDropDown";
 import PastTeams from "../past-teams/page";
 
+/**
+ * This interface represents a player and all the data that needs to be known about them
+ * There is a Player interace for each of the 3 players
+ */
 interface Player {
   tag: string;
   isValid: boolean;
@@ -34,6 +37,10 @@ interface Player {
   >;
   playerNumber: number;
 }
+
+/**
+ * These represent the different types of errors that could occur while using the website
+ */
 export enum Error {
   NO_ERROR,
   API_ERROR,
@@ -47,11 +54,20 @@ export enum Error {
   NO_TAG_ERROR,
 }
 
-// const serverURL =
-//   "https://159f-2620-6e-6000-3100-6481-ff51-677-dd27.ngrok-free.app";
 const serverURL = "http://localhost:8000";
 
+/**
+ * This represents the 3v3 optimizer page for the website
+ *
+ * @returns the html for the page
+ */
 export default function TeamOpt3v3() {
+  /**
+   * This sets up a new player
+   *
+   * @param playerNumber 1, 2, or 3
+   * @returns a new player interface
+   */
   const usePlayerState = (playerNumber: number): Player => {
     const [tag, setTag] = useState<string>("");
     const [isValid, setIsValid] = useState<boolean>(false);
@@ -125,7 +141,6 @@ export default function TeamOpt3v3() {
   const [errorBanner, setErrorBanner] = useState<Error>(Error.NO_ERROR); // 0 for no banner, 1 for error with api, 2 for [insert here]
   const [errorText, setErrorText] = useState<string>("dxd");
   const player1 = usePlayerState(1);
-  // const [player1, setPlayer1] = useState(usePlayerState(1));
   const player2 = usePlayerState(2);
   const player3 = usePlayerState(3);
 
@@ -160,6 +175,11 @@ export default function TeamOpt3v3() {
   //   fetchUserData();
   // }, []);
 
+  /**
+   * This function calls the backend server to get a list of all the brawlers
+   *
+   * @returns a list of the brawlers and their ids
+   */
   async function getCurrentBrawlers(): Promise<[string, string][]> {
     const fetchJson = await fetch(serverURL + "/getAllBrawlers");
     const currentBrawlers = await fetchJson.json();
@@ -179,6 +199,12 @@ export default function TeamOpt3v3() {
 
   //not sure if this will stay like this, will probably just set the state
   // instead of returning
+
+  /**
+   * This function calls the backend to get all the current maps and modes that are available
+   *
+   * @returns a list of tuples of modes and their maps
+   */
   async function getModeMapData(): Promise<[string, string[]][]> {
     const fetchJson = await fetch(serverURL + "/getMapRotation");
     const allMapModePairs = await fetchJson.json();
@@ -214,6 +240,9 @@ export default function TeamOpt3v3() {
     return [];
   }
 
+  /**
+   * This checks if tags are input in the correct order and are valid
+   */
   async function checkValidity() {
     tagOrderChecker();
     if (errorBanner === Error.NO_ERROR) {
@@ -221,6 +250,9 @@ export default function TeamOpt3v3() {
     }
   }
 
+  /**
+   * Helper function to check tag order
+   */
   function tagOrderChecker() {
     if (player1.tag === "" && (player2.tag !== "" || player3.tag !== "")) {
       setErrorBanner(Error.WRONG_ORDER_ERROR);
@@ -232,6 +264,12 @@ export default function TeamOpt3v3() {
   }
 
   // TODO, ensure that the banner is what we want!
+
+  /**
+   * This checks if all the tags are valid
+   *
+   * @returns
+   */
   async function checkAllTags() {
     if (player1.tag === "") {
       // setErrorBanner(Error.NO_TAG_ERROR);
@@ -290,6 +328,11 @@ export default function TeamOpt3v3() {
     }
   }
 
+  /**
+   * This retrieves a certain player tag if they are logged in
+   *
+   * @returns
+   */
   async function getPlayerTag() {
     if (auth.currentUser) {
       const user = auth.currentUser;
@@ -314,6 +357,11 @@ export default function TeamOpt3v3() {
     return;
   }
 
+  /**
+   * This returns all the preferred/owned brawlers for each of the three players
+   *
+   * @returns a list of brawler sets
+   */
   function getBrawlerList(): Set<string>[] {
     let brawlerList: Set<string>[] = [];
     const players = [player1, player2, player3];
@@ -346,6 +394,7 @@ export default function TeamOpt3v3() {
     console.log("Fetched all brawler data!");
   }, []);
 
+  // fetches the icons when the page loads
   useEffect(() => {
     async function initializeIcons() {
       const brawlerLinks = await populateIcons();
@@ -354,6 +403,7 @@ export default function TeamOpt3v3() {
     initializeIcons();
   }, [allBrawlers]);
 
+  // fetches the map and mode data when the page loads
   useEffect(() => {
     const fetchModeMapData = async () => {
       const data = await getModeMapData();
@@ -363,6 +413,7 @@ export default function TeamOpt3v3() {
     fetchModeMapData();
   }, []);
 
+  // sets the error banner when an error occurs
   useEffect(() => {
     setErrorText(errorToBannerText(errorBanner));
   }, [errorBanner]);
@@ -564,6 +615,12 @@ export default function TeamOpt3v3() {
   );
 }
 
+/**
+ * This function calls the backend to find a player by tag, and sets an error if the tag is invalid
+ *
+ * @param player the player and their tag to check
+ * @returns true or false if the player tag is valid
+ */
 async function checkPlayerTag(player: Player) {
   let tagJson;
   let tagData;
@@ -593,6 +650,12 @@ async function checkPlayerTag(player: Player) {
   return false;
 }
 
+/**
+ * This function updates a players dropdown of brawlers with their star powers and gadgets and owned brawlers
+ *
+ * @param player the player to update the brawlers for
+ * @param rawBrawlerData the brawlers that the player owns
+ */
 async function updateBrawlersOwned(player: Player, rawBrawlerData: any) {
   if (rawBrawlerData) {
     if (rawBrawlerData[0]) {
@@ -623,6 +686,12 @@ async function updateBrawlersOwned(player: Player, rawBrawlerData: any) {
   }
 }
 
+/**
+ * This function returns error text based on an error
+ *
+ * @param error the error that occurred
+ * @returns the text corresponding to the error
+ */
 function errorToBannerText(error: Error) {
   if (error == Error.NO_ERROR) {
     return "No error";
@@ -649,6 +718,14 @@ function errorToBannerText(error: Error) {
   return "Something went wrong, please try again later";
 }
 
+/**
+ * This function populates the best brawlers table by calling the backend and getting ratings
+ *
+ * @param brawlers a list brawler sets for each player (preferred/owned brawlers)
+ * @param mode the mode to optimize for, if any
+ * @param map the map to optimize for, if any
+ * @returns the top ten teams
+ */
 async function populateTable(
   brawlers: Set<string>[],
   mode: string,
@@ -762,6 +839,12 @@ async function populateTable(
   return teams;
 }
 
+/**
+ * This function converts a string to title case (e.g. "hello -> Hello")
+ *
+ * @param str the string to convert
+ * @returns str in title case
+ */
 function toTitleCase(str: string): string {
   return str.toLowerCase().replace(/(?:^|\s)\w/g, (match) => {
     return match.toUpperCase();

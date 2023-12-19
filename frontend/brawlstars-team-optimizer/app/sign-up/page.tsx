@@ -19,8 +19,13 @@ import { createTheme, ThemeProvider } from "@mui/material/styles";
 import "./sign-up.css";
 import { Link } from "@mui/material";
 
+// Creating defaultTheme using Materials Ui
 const defaultTheme = createTheme();
 
+/**
+ * Defining sign up functional component to return to render
+ * @return SignUpComponent: Returns sign up component to render on screen
+ */
 function Signup() {
   const router = useRouter();
   const [signupSuccess, setSignupSuccess] = useState(false);
@@ -28,6 +33,10 @@ function Signup() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
+  /**
+   * Function to add user to our firestore database with a docId of their user id, and filling in all the information as defaults
+   * @param {string} userUid -  string that will be used as the document unique ID in our firestore database
+   */
   const addUser = async (userUid: string) => {
     try {
       console.log(userUid);
@@ -47,6 +56,12 @@ function Signup() {
       console.error("Error adding document: ", error);
     }
   };
+
+  /**
+   * Function that handles the onSubmit function for the button. Creates a new user on our database and setsSignUpSuccess to be true. If any error occurs,
+   * it presents it to the user via alerts
+   * @param {FormEvent} e - The form event triggered by the form submission.
+   */
   const onSubmit = async (e: FormEvent) => {
     e.preventDefault();
 
@@ -96,6 +111,7 @@ function Signup() {
     }
   };
 
+  // Rendering the signup component using MaterialsUi grid
   return (
     <div className="sign-up-div">
       {/* <NavBar /> */}
@@ -118,27 +134,6 @@ function Signup() {
             </Typography>
             <Box component="form" noValidate sx={{ mt: 3 }} onSubmit={onSubmit}>
               <Grid container spacing={2}>
-                {/* <Grid item xs={12} sm={6}>
-                  <TextField
-                    autoComplete="given-name"
-                    name="firstName"
-                    required
-                    fullWidth
-                    id="firstName"
-                    label="First Name"
-                    autoFocus
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6}>
-                  <TextField
-                    required
-                    fullWidth
-                    id="lastName"
-                    label="Last Name"
-                    name="lastName"
-                    autoComplete="family-name"
-                  />
-                </Grid> */}
                 <Grid item xs={12}>
                   <TextField
                     required
@@ -195,4 +190,5 @@ function Signup() {
   );
 }
 
+// Export the SignUp component for rendering
 export default Signup;

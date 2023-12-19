@@ -12,6 +12,11 @@ interface BrawlerCardProps {
   playerNumber: number;
 }
 
+/**
+ * Generates a list of React elements, each one represents a gadget/star power.
+ * @param props Brawl Card Props which include information about the brawler and it's image information
+ * @returns A list of React elements that represent, in this order: Star Power (1), Star Power (2), Gadget (1), Gadget (2)
+ */
 function generateIcons(props: BrawlerCardProps): React.JSX.Element[] {
   let gridArray: React.JSX.Element[] = [];
   for (const [globalStarPowerInfo, starPowerIcon] of props.globalBrawlerLinks
@@ -54,14 +59,18 @@ function generateIcons(props: BrawlerCardProps): React.JSX.Element[] {
   return gridArray;
 }
 
-//    <Grid item xs={3}>
-//   <img src={iconLink} alt={iconName} className="lockedIcon" />
-// </Grid>
-
+/**
+ * Generates a Brawl Card element that has the Brawler's icon image, its name, and its star power/gadget images.
+ * @param props Brawl Card Props which include information about the brawlers clicked in the Drop Down Check Box
+ * @returns A rendered Brawl Card component element
+ */
 export function BrawlerCard(props: BrawlerCardProps) {
   if (props.globalBrawlerLinks !== undefined) {
     return (
-      <Card sx={{ display: "flex", maxWidth: 500 }} aria-label={`Player ${props.playerNumber} Card for ${props.brawlerName}`}>
+      <Card
+        sx={{ display: "flex", maxWidth: 500 }}
+        aria-label={`Player ${props.playerNumber} Card for ${props.brawlerName}`}
+      >
         <CardMedia
           sx={{ width: 60, height: 100, objectFit: "scale-down" }}
           component="img"

@@ -1,12 +1,16 @@
 import { XMarkIcon } from "@heroicons/react/20/solid";
-import { Error } from "@/app/3v3-optimizer/page"
+import { Error } from "@/app/3v3-optimizer/page";
 
 interface BannerProps {
   bannerTitle: string;
   bannerText: string;
   setErrorBanner: React.Dispatch<React.SetStateAction<Error>>;
 }
-
+/**
+ * Produces an error message in the form of a banner
+ * @param props BannerProps that contain the error message and title
+ * @return A rendered error message
+ */
 export function Banner(props: BannerProps) {
   return (
     <div className="banner">

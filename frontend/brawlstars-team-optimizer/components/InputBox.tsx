@@ -19,7 +19,6 @@ interface ControlledInputProps {
 
 /**
  * A function that controls the input given by the user
- *
  * @param - ControlledProps: See interface comment
  * @returns: an input component with the given value and ariaLabel
  */

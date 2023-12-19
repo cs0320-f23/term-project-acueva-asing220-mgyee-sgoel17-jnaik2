@@ -12,7 +12,14 @@ import { auth, db } from "../firebase";
 import { doc, updateDoc } from "firebase/firestore";
 import "./settings.css";
 
+/**
+ * Function to render Settings Component on screen
+ * @return - Settings Component to return on screen
+ */
 function Settings() {
+  /**
+   * Async function to handle submit for button. On click, it should update playerTag for user in our firestore database
+   */
   const handleSubmit = async () => {
     if (!auth.currentUser) {
       alert("Sign in to set a player tag");
@@ -30,6 +37,11 @@ function Settings() {
     }
   };
 
+  /**
+   * Handles input change events for the player tag.
+   *
+   * @param {Object} event - The input change event object.
+   */
   const handleInputChange = (event: any) => {
     setPlayerTag(event.target.value);
   };
@@ -65,6 +77,8 @@ function Settings() {
       </CardActions>
     </React.Fragment>
   );
+
+  // Rendering the Settings Component using MaterialsUI card component
   return (
     <div className="settings-div">
       <NavBar />
@@ -81,4 +95,5 @@ function Settings() {
   );
 }
 
+// Exporting Settings Component
 export default Settings;

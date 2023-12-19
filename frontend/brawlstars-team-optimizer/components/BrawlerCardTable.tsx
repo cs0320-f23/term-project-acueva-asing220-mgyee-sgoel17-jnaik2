@@ -16,6 +16,13 @@ interface BrawlerCardTableProps {
   playerNumber: number;
 }
 
+/**
+ * Converts the selected Brawlers into a list of rendered Brawler Card elements
+ * @param props Brawler Card Table Prop that includes information about which
+ * brawlers are selected & the player/globally available star powers/gadgets
+ * @returns A list of rendered Brawler Card elements that can be displayed in
+ * a vertical grid in BrawlerCardTable
+ */
 function populateBrawlerCardTable(props: BrawlerCardTableProps) {
   return Array.from(props.preferredBrawlers).map((name) => {
     const playerBrawlerInformation = props.playerBrawlersInformation.get(
@@ -43,6 +50,12 @@ function populateBrawlerCardTable(props: BrawlerCardTableProps) {
   });
 }
 
+/**
+ * Generates a Brawl Card Table that has one Brawler Card for each Brawler selected
+ * @param props Brawler Card Table Prop that includes information about which
+ * brawlers are selected & the player/globally available star powers/gadgets
+ * @returns A rendered Brawl Card Table element
+ */
 export function BrawlerCardTable(props: BrawlerCardTableProps) {
   return (
     <Grid

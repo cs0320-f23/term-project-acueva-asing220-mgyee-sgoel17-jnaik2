@@ -10,31 +10,11 @@ interface OutlinedCardProps {
   playerTag: string;
 }
 
-// const card = (
-//   <React.Fragment>
-//     <CardContent>
-//       <Typography variant="h5" component="div">
-//         Profile
-//       </Typography>
-//       <Typography sx={{ mb: 1.5 }} color="text.secondary">
-//         Playertag: {playerTag}
-//       </Typography>
-//       <Typography variant="body2"></Typography>
-//     </CardContent>
-//     {/* <CardActions>
-//       <Button size="small">Learn More</Button>
-//     </CardActions> */}
-//   </React.Fragment>
-// );
-
-// export default function OutlinedCard() {
-//   return (
-//     <Box sx={{ minWidth: 275 }}>
-//       <Card variant="outlined">{card}</Card>
-//     </Box>
-//   );
-// }
-
+/**
+ * Produces an outline card that is shown when the profile card is clicked
+ * @param playerTag the string player tag
+ * @returns Renders an outlined card
+ */
 const OutlinedCard: React.FC<OutlinedCardProps> = ({ playerTag }) => {
   return (
     <Box sx={{ minWidth: 275 }}>
@@ -54,7 +34,6 @@ const OutlinedCard: React.FC<OutlinedCardProps> = ({ playerTag }) => {
           >
             Playertag: {playerTag}
           </Typography>
-          {/* Additional content or actions */}
         </CardContent>
       </Card>
     </Box>
