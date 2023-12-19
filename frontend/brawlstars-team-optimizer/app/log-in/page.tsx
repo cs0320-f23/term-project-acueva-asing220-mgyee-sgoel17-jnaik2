@@ -14,6 +14,8 @@ import Box from "@mui/material/Box";
 import LockOutlinedIcon from "@mui/icons-material/LockOutlined";
 import Typography from "@mui/material/Typography";
 import Container from "@mui/material/Container";
+import { Link } from "@mui/material";
+import "./login.css";
 
 const defaultTheme = createTheme();
 
@@ -40,21 +42,29 @@ const Login = () => {
             alert("Invalid email address");
             break;
           case "auth/user-not-found":
-            alert("User not found");
+            alert("User not found. Have you made an account yet?");
             break;
           case "auth/wrong-password":
             alert("Wrong password");
             break;
+          case "auth/invalid-credential":
+            alert("Incorrect email and/or password given. Please try again");
+            break;
+          case "auth/weak-password":
+            alert(
+              "Please enter a stronger password. It should be minimum 6 characters"
+            );
+            break;
           default:
-            alert("An error occurred:" + errorMessage);
+            alert("An error occurred: " + errorCode);
             break;
         }
       });
   };
 
   return (
-    <div>
-      <NavBar />
+    <div className="logInDiv">
+      {/* <NavBar /> */}
       <ThemeProvider theme={defaultTheme}>
         <Container component="main" maxWidth="xs">
           <CssBaseline />
@@ -124,12 +134,32 @@ const Login = () => {
                     }}
                   />
                 </Grid>
+                <Grid container justifyContent="flex-end">
+                  <Grid item>
+                    <Link href="how-to" variant="body2">
+                      Don't want to log in? Continue to main page
+                    </Link>
+                  </Grid>
+                </Grid>
+                <Grid container justifyContent="flex-end">
+                  <Grid item>
+                    <Link href="sign-up" variant="body2">
+                      Don't have an account? Sign up here
+                    </Link>
+                  </Grid>
+                </Grid>
               </Grid>
               <Button
                 type="submit"
+                className="logInButton"
                 fullWidth
                 variant="contained"
-                sx={{ mt: 3, mb: 2 }}
+                sx={{
+                  mt: 3,
+                  mb: 2,
+                  color: "primary.contrastText",
+                  backgroundColor: "primary.main",
+                }}
               >
                 Log in
               </Button>

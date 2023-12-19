@@ -12,7 +12,7 @@ import { BrawlerCard } from "@/components/BrawlerCard";
 import { BrawlerCardTable } from "@/components/BrawlerCardTable";
 import { brawlerURLS, populateIcons } from "../../components/brawlerIcons";
 import { auth, db } from "../firebase";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc, arrayUnion } from "firebase/firestore";
 import ModeDropDown from "@/components/ModeDropDown";
 import MapDropDown from "@/components/MapDropDown";
 import PastTeams from "../past-teams/page";
@@ -412,7 +412,7 @@ export default function TeamOpt3v3() {
                   globalBrawlersInformation={iconMap}
                   playerBrawlersInformation={player1.brawlerBuildMap}
                   defaultID={player1.isValid}
-                                    playerNumber={player1.playerNumber}
+                  playerNumber={player1.playerNumber}
                 ></BrawlerCardTable>
               )}
             </div>
@@ -479,7 +479,7 @@ export default function TeamOpt3v3() {
                   globalBrawlersInformation={iconMap}
                   playerBrawlersInformation={player3.brawlerBuildMap}
                   defaultID={player3.isValid}
-                                    playerNumber={player3.playerNumber}
+                  playerNumber={player3.playerNumber}
                 ></BrawlerCardTable>
               )}
             </div>
@@ -510,7 +510,7 @@ export default function TeamOpt3v3() {
           id="button"
           className="optimizerButton"
           onClick={async () => {
-            let teamsToBeAdded;
+            let teamsToBeAdded: team[] = [];
             const setTable = async () => {
               const brawlers: Set<string>[] = getBrawlerList();
               const teams = await populateTable(
@@ -529,10 +529,24 @@ export default function TeamOpt3v3() {
 
               if (userDoc.exists()) {
                 const currentPastTeams: team[] = userDoc.data().PastTeams || [];
-                const newPastTeams = [...currentPastTeams, ...[teamsToBeAdded]];
-                await updateDoc(userRef, {
-                  pastTeams: newPastTeams,
-                });
+                // const newPastTeams = [...currentPastTeams, ...[teamsToBeAdded]];
+                // if (teamsToBeAdded) {
+                //   for (const team of [teamsToBeAdded]) {
+                //     // Add the team using arrayUnion
+                //     currentPastTeams.push(team);
+                //   }
+
+                //   await updateDoc(userRef, {
+                //     pastTeams: currentPastTeams,
+                //   });
+                // }
+                if (teamsToBeAdded && teamsToBeAdded.length > 0) {
+                  const newPastTeams = [...currentPastTeams, ...teamsToBeAdded];
+
+                  await updateDoc(userRef, {
+                    pastTeams: arrayUnion(...newPastTeams),
+                  });
+                }
               }
             }
           }}

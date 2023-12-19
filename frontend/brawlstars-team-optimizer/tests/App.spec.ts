@@ -10,7 +10,7 @@ test("player id correct", async ({ page }) => {
   await expect(page.getByRole("option", { name: "Pearl" })).toBeDisabled();
 });
 
-test("player id dne", async ({ page }) => {
+test("player id not valid", async ({ page }) => {
   await page.goto("http://localhost:3000/3v3-optimizer");
   await expect(
     page.getByPlaceholder("Please Input Player 1's Tag")

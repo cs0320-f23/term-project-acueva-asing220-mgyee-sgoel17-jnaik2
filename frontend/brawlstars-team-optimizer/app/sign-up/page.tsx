@@ -23,17 +23,13 @@ const defaultTheme = createTheme();
 
 function Signup() {
   const router = useRouter();
-  // const navigate = useNavigate();
-  // const history = useHistory();
   const [signupSuccess, setSignupSuccess] = useState(false);
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  // const db = getFirestore(); // Initialize Firestore
   const addUser = async (userUid: string) => {
     try {
-      // Add a new document with a generated ID to the "Users" collection
       console.log(userUid);
       // const teamToBeAdded: team = {
       //   b1: "Shelly",
@@ -64,25 +60,45 @@ function Signup() {
 
       console.log("User signed up:", user);
 
-      // Add the user to the "Users" collection in Firestore
       await addUser(user.uid);
 
       // Redirect to the desired page
       router.replace("/how-to");
 
-      // Set signup success state
       setSignupSuccess(true);
     } catch (error: unknown) {
       const errorCode = (error as any).code;
       const errorMessage = (error as any).message;
-      console.error("Signup error:", errorCode, errorMessage);
-      alert("The error code is: " + errorMessage);
+      switch (errorCode) {
+        case "auth/invalid-email":
+          alert("Invalid email address");
+          break;
+        case "auth/user-not-found":
+          alert("User not found. Have you made an account yet?");
+          break;
+        case "auth/wrong-password":
+          alert("Wrong password");
+          break;
+        case "auth/invalid-credential":
+          alert("Incorrect email and/or password given. Please try again");
+          break;
+        case "auth/weak-password":
+          alert(
+            "Please enter a stronger password. It should be minimum 6 characters"
+          );
+          break;
+        case "auth/email-already-in-use":
+          alert("There is already an email with this account. Try logging in");
+        default:
+          alert("An error occurred: " + errorCode);
+          break;
+      }
     }
   };
 
   return (
     <div className="sign-up-div">
-      <NavBar />
+      {/* <NavBar /> */}
       <ThemeProvider theme={defaultTheme}>
         <Container component="main" maxWidth="xs">
           <CssBaseline />
@@ -128,6 +144,7 @@ function Signup() {
                     required
                     fullWidth
                     id="email"
+                    className="signUpEmail"
                     label="Email Address"
                     name="email"
                     autoComplete="email"
@@ -149,6 +166,7 @@ function Signup() {
               </Grid>
               <Button
                 type="submit"
+                className="signUpButton"
                 fullWidth
                 variant="contained"
                 sx={{ mt: 3, mb: 2 }}
@@ -159,6 +177,13 @@ function Signup() {
                 <Grid item>
                   <Link href="log-in" variant="body2">
                     Already have an account? Sign in
+                  </Link>
+                </Grid>
+              </Grid>
+              <Grid container justifyContent="flex-end">
+                <Grid item>
+                  <Link href="how-to" variant="body2">
+                    Don't want to sign in? Continue to main page
                   </Link>
                 </Grid>
               </Grid>

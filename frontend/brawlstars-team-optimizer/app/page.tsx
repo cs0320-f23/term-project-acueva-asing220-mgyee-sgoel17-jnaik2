@@ -14,7 +14,7 @@ function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<Home />} />
+        <Route path="/" element={<Signup />} />
         <Route path="/how-to" element={<Home />} />
         <Route path="/3v3-optimizer" element={<TeamOpt3v3 />} />
         <Route path="/signup" element={<Signup />} />
