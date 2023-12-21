@@ -135,6 +135,7 @@ export default function TeamOpt3v3() {
     return () => unsubscribe();
   }, []);
   const [allBrawlers, setAllBrawlers] = useState<[string, string][]>([]);
+  const [teamsToBeAdded, setTeamsToBeAdded] = useState<team[]>([]);
   const [allMapModes, setAllMapModes] = useState<[string, string[]][]>([]);
   const [teamsToBeAdded, setTeamsToBeAdded] = useState<team[]>([]);
   const [currentMode, setCurrentMode] = useState<string>("Select a mode");
@@ -153,8 +154,15 @@ export default function TeamOpt3v3() {
     setRows(teams);
   };
 
+//   useEffect(() => {
+//     // Define an asynchronous function to update Firestore
+//     // console.log("teamstoBeAdded length is: " + teamsToBeAdded.length);
+//     setRows(teams);
+//   };
+  // useEffect(() => {
+  //   console.log("teamstoBeAdded length is: " + teamsToBeAdded.length);
+  // }, [teamsToBeAdded]);
   useEffect(() => {
-    // Define an asynchronous function to update Firestore
     const updateFirestore = async () => {
       if (auth.currentUser) {
         const userRef = doc(db, "Users", auth.currentUser?.uid);
@@ -759,6 +767,7 @@ function errorToBannerText(error: Error) {
  * @param map the map to optimize for, if any
  * @returns the top ten teams
  */
+
 async function populateTable(
   brawlers: Set<string>[],
   mode: string,

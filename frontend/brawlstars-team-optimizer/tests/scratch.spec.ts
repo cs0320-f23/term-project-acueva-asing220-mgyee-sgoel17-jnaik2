@@ -26,6 +26,20 @@ test("table displays results for a certain mode", async ({ page }) => {
   await expect(page.getByRole("columnheader", { name: "Team" })).toBeVisible();
   await expect(page.getByRole("columnheader", { name: "Score" })).toBeVisible();
   await expect(page.getByLabel("teamCombo")).toHaveCount(10);
+  // await expect(page.getByLabel("teamCombo")).;
+  // await expect(page.getByLabel("teamCombo").count()).toBeGreaterThan(50);
+  // await expect(page.getByLabel("brawler result table").count()).toBeGreaterThan(
+  //   50
+  // );
+  // await page.waitForSelector("#brawler result table");
+
+  // await expect(page.getByLabel("brawler result table")).toBeVisible();
+
+  // // Select all table rows inside the TableBody component
+  // const tableRows = await page.$$("#brawler result table");
+
+  // // Check the number of rows
+  // await expect(tableRows.length).toBeGreaterThan(50);
 });
 
 test("table displays results for a certain mode and map", async ({ page }) => {
@@ -33,7 +47,7 @@ test("table displays results for a certain mode and map", async ({ page }) => {
   await page.locator('[id="Mode\\ Select\\ Dropdown"]').click();
   await page.getByRole("option", { name: "Brawl Ball" }).click();
   await page.locator('[id="Map\\ Select\\ Dropdown"]').click();
-  await page.getByRole("option", { name: "Winter Party" }).click();
+  await page.getByRole("option", { name: "Galaxy Arena" }).click();
   await page.getByLabel("Submit button").click();
   await page.waitForTimeout(5000);
   await expect(page.getByLabel("teamCombo")).toHaveCount(10);
