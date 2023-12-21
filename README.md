@@ -1,35 +1,28 @@
 # term-project-acueva-asing220-mgyee-sgoel17-jnaik2
 
-Welcome to [Our term project](https://github.com/cs0320-f23/maps-kganesh-sgoel17/tree). Authored by @kylashg1 & @Spandan14. Estimated time of completion: 17 hours.
-https://github.com/cs0320-f23/maps-kganesh-sgoel17
+https://github.com/cs0320-f23/term-project-acueva-asing220-mgyee-sgoel17-jnaik2
+
+Alex Cueva
+Aryan Singh
+Matthias Yee
+Spandan Goel
+Jaideep Naik
 
 ---
 
 ## Project Overview
 
-Maps is a React application that allows users to access [GeoJSON](https://geojson.org/) data via a map and a command line-like interface. It allows for a variety of commands to be entered. It runs on a Spark Server that exposes seven GET endpoints:
-
-- two for GeoJSON viewing - `loadJson`, `viewJson`,
-- three for GeoJSON searching - `searchByDescription`, `searchAtPoint`, `searchByBoundingBox`
-- and two as API middleware, `broadbandAtPoint`, `stateCountyAtPoint`.
+Our Brawl Stars Optimizer is a web application that players can use in order to find optimal team compositions for the mobile game Brawl Stars. The project is built with a backend (python) server and a frontend (TypeScript/React/Next.js) website.
 
 ## Website Functionality
 
-When a user clicks a point of the map, data regarding the region where they clicked is shown, and broadband data is fetched using `broadbandAtPoint` from the server. While the server does expose a `searchAtPoint` endpoint, the calculation to determine which region the click was made in, is done entirely on the client-side.
+A user first selects preferred brawlers that they or their teammates would like to play, or they can input player tags to customize the preferred brawlers to only the ones that are owned. Next, users can either optimize over all modes and maps, or specifiy and mode and then a map. Finally, clicking the find best brawlers button will output a list of teams with scores that indicate how strong the team is.
 
-`loadJson`, `viewJson`, and `searchByDescription` are available via the command line in the application, and can be accessed with the following commands.
+### `3v3-optimizer`
 
-### `load <filename>`
+The file `page.tsx` in this directory contains the main logic for the optimizer page. It uses components from the `components/` directory such as `BrawlerCard.tsx` and `ReactTable.tsx` in order to visualize those pieces of the websites. This file is also where calls to the backend server are made to get things such as brawler names and ids as well as images.
 
-`load` allows users to load a GeoJSON from the backend into memory and perform operations on it. Once a file is loaded, nothing immediately happens, but `view` is avilable. `load` will fail if an invalid file name is provided.
-
-### `view`
-
-`view` allows users to see all the data in the currently loaded GeoJSON by resetting the base layer and updating it with the features in the file currently loaded. The filtered features layer will be reset. `view` will fail if no GeoJSON file is loaded.
-
-### `search <query>`
-
-`search` allows users to search for features with `<query>` in their description. The output of this will be shown in a blue hue, and will overlay every region on the map that satisfies the constraint.
+### `firebase`
 
 ## Server Functionality
 
@@ -58,7 +51,7 @@ No current known bugs exist. Please file an issue or open a pull request if you 
 
 ### Playwright
 
-Playwright was used to test multiple facets of the application across various states, including robust testing of back-to-back CSV file loads and views, and other stateful interactions. The application was tested to work on Chromium, Firefox, and Webkit-based browsers. Tests can be found in `frontend/tests`. Use `npx playwright test` to run tests (run `npx playwright install` to install Playwright).
+Playwright was used to test multiple facets of the application across various states, including robust testing of back-to-back CSV file loads and views, and other stateful interactions. The application was tested to work on Chromium, Firefox, and Webkit-based browsers. Tests can be found in `frontend/brawlstars-team-optimizer-tests`. Use `npx playwright test` to run tests (run `npx playwright install` to install Playwright).
 
 ### JUnit
 
@@ -66,30 +59,8 @@ Every backend endpoint is heavily unit tested. Both API middleware endpoints are
 
 Run `mvn site` from `/backend` to run the server test suite.
 
-## Reflection
-
-### Whose Labor?
-
-We rely on a lot of other people's work when we run any of the code in this repository. Here are some of the packages we used in this project (not an exhaustive list)
-
-- Spark
-- Gson
-- Moshi
-- JUnit
-- Playwright
-- React
-
-and more. On top of this, we use other technologies such as
-
-- TypeScript
-- Java
-- IntelliJ
-- VSCode
-- WebStorm
-- the entire network stack (TCP/IP/HTTP)
-
 ## Getting Started
 
-You can get started by cloning this repository and running `npm install` to install the dependencies. Run the applicatiaon with `npm start`, which should start the application at `localhost:8000`.
+You can get started by cloning this repository and running `npm install` to install the dependencies. Run the applicatiaon with `npm run dev`, which should start the application at `localhost:3000`.
 
-You can run the server from `/backend`, and call `mvn package` to build.
+The server can be run with `python3 api.py` when the local postgres database is running. The server can be reached at `localhost:8000`.
