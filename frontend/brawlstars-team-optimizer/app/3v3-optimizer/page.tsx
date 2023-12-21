@@ -137,7 +137,6 @@ export default function TeamOpt3v3() {
   const [allBrawlers, setAllBrawlers] = useState<[string, string][]>([]);
   const [teamsToBeAdded, setTeamsToBeAdded] = useState<team[]>([]);
   const [allMapModes, setAllMapModes] = useState<[string, string[]][]>([]);
-  const [teamsToBeAdded, setTeamsToBeAdded] = useState<team[]>([]);
   const [currentMode, setCurrentMode] = useState<string>("Select a mode");
   const [currentMap, setCurrentMap] = useState<string>("Select a map");
   const [errorBanner, setErrorBanner] = useState<Error>(Error.NO_ERROR); // 0 for no banner, 1 for error with api, 2 for [insert here]
@@ -154,11 +153,11 @@ export default function TeamOpt3v3() {
     setRows(teams);
   };
 
-//   useEffect(() => {
-//     // Define an asynchronous function to update Firestore
-//     // console.log("teamstoBeAdded length is: " + teamsToBeAdded.length);
-//     setRows(teams);
-//   };
+  //   useEffect(() => {
+  //     // Define an asynchronous function to update Firestore
+  //     // console.log("teamstoBeAdded length is: " + teamsToBeAdded.length);
+  //     setRows(teams);
+  //   };
   // useEffect(() => {
   //   console.log("teamstoBeAdded length is: " + teamsToBeAdded.length);
   // }, [teamsToBeAdded]);
