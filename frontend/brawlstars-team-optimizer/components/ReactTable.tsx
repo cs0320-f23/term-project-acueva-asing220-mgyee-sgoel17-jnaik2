@@ -52,7 +52,11 @@ export function BasicTable(props: Props) {
   const count = 0;
   return (
     <TableContainer component={Paper}>
-      <Table sx={{ minWidth: 650 }} aria-label="brawler result table">
+      <Table
+        sx={{ minWidth: 650 }}
+        id="brawler result table"
+        aria-label="brawler result table"
+      >
         <TableHead>
           <StyledTableRow>
             <StyledTableCell align="center">Team</StyledTableCell>
