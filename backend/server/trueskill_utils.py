@@ -15,8 +15,22 @@ setup(DEFAULT_MU, DEFAULT_SIGMA, DEFAULT_BETA, DEFAULT_TAU)
 
 
 class TrueSkillRating:
+    """
+    This class is used to store the TrueSkill ratings for a brawler.
+    """
+
     def __init__(self, pro_rating: Rating = None, pro_player_battle_count: int = None, user_rating: Rating = None,
                  user_battle_count: int = None, combined_rating: Rating = None, from_database=False):
+        """
+        Initializes a TrueSkillRating object.
+
+        :param pro_rating: pro player brawler TrueSkill rating object
+        :param pro_player_battle_count: num of battles pro players have played on this brawler
+        :param user_rating: user brawler TrueSkill rating object
+        :param user_battle_count: num of battles users have played on this brawler
+        :param combined_rating: combined brawler TrueSkill rating object
+        :param from_database: whether this rating was populated from the database or is newly constructed
+        """
         self.pro_rating = Rating(DEFAULT_MU, DEFAULT_SIGMA) if pro_rating is None else pro_rating
         self.pro_player_battle_count = 0 if pro_player_battle_count is None else pro_player_battle_count
 
@@ -35,6 +49,12 @@ class TrueSkillRating:
         self.from_database = from_database
 
     def convert_to_api_data(self):
+        """
+        Converts this TrueSkillRating object to a dictionary that can be used in an API response.
+
+        :return: a JSON-serializable dictionary with the TrueSkill ratings, will throw an error if ratings are
+                 initialized to none
+        """
         return {
             API_PRO_PLAYER_RATING_MU_KEY: self.pro_rating.mu,
             API_PRO_PLAYER_RATING_SIGMA_KEY: self.pro_rating.sigma,
@@ -51,26 +71,44 @@ class TrueSkillRating:
 
 
 class PlayerType(Enum):
+    """
+    This enum is used to differentiate between pro players and app users.
+    """
     PRO = 0
     USER = 1
 
 
 class RatingType(Enum):
+    """
+    This enum is used to differentiate between global, mode, and map ratings.
+    """
     GLOBAL = 0
     MODE = 1
     MAP = 2
 
 
 class FactoryDefaultDict(defaultdict):
+    """
+    This class is used to create a defaultdict with a default_factory that is called when a key is missing.
+    """
     def __missing__(self, key):
         self[key] = new = self.default_factory()
         return new
 
 
-# TODO: add rating history
 # noinspection PyUnresolvedReferences
 class BrawlerTrueSkill:
+    """
+    This class is used to store the TrueSkill ratings for a brawler.
+    """
     def __init__(self, brawler_name, cursor, connection):
+        """
+        Initializes a BrawlerTrueSkill object.
+
+        :param brawler_name: name of the brawler being rated
+        :param cursor: cursor of the postgresql database
+        :param connection: connection of the postgresql database
+        """
         self.__cursor = cursor
         self.__conn = connection
         self.__brawler_name = brawler_name
@@ -79,6 +117,12 @@ class BrawlerTrueSkill:
         self.map_ratings = FactoryDefaultDict(TrueSkillRating)  # SCHEMA: (mode_name, map_name) : TrueSkillRating
 
     def convert_to_api_data(self):
+        """
+        Converts this BrawlerTrueSkill object to a dictionary that can be used in an API response.
+
+        :return: a JSON-serializable dictionary with the TrueSkill ratings, will throw an error if ratings are
+                initialized to none
+        """
         data = {API_BRAWLER_NAME_KEY: self.__brawler_name,
                 API_GLOBAL_RATING_KEY: self.global_rating.convert_to_api_data()}
 
@@ -100,6 +144,12 @@ class BrawlerTrueSkill:
         return data
 
     def update_ratings_to_db(self, mode, battle_map):
+        """
+        Updates the ratings for this brawler to the database, for a specific mode and map. Updates ratings on all levels
+
+        :param mode: specific mode to update ratings for
+        :param battle_map: specific map to update ratings for
+        """
         # to remove apostrophes in map names
         battle_map = battle_map.replace("'", "")
 
@@ -124,11 +174,17 @@ class BrawlerTrueSkill:
                                           map_name=battle_map)
 
     def populate_ratings(self):
+        """
+        Populates the ratings for this brawler from the database. Populates ratings on all levels.
+        """
         self.populate_global_rating()
         self.populate_mode_ratings()
         self.populate_map_ratings()
 
     def populate_global_rating(self):
+        """
+        Populates the global rating for this brawler from the database.
+        """
         self.__cursor.execute(f"SELECT * FROM {SCHEMA_NAME}.\"{GLOBAL_RATING_TABLE}\" WHERE \"{BRAWLER_NAME_KEY}\" "
                               f"= \'{self.__brawler_name}\'")
 
@@ -147,6 +203,9 @@ class BrawlerTrueSkill:
             raise Exception(f"More than one global rating for {self.__brawler_name}")
 
     def populate_mode_ratings(self):
+        """
+        Populates the mode ratings for this brawler from the database.
+        """
         self.__cursor.execute(f"SELECT * FROM {SCHEMA_NAME}.\"{MODE_RATING_TABLE}\" WHERE \"{BRAWLER_NAME_KEY}\" "
                               f"= \'{self.__brawler_name}\'")
 
@@ -158,6 +217,9 @@ class BrawlerTrueSkill:
             self.mode_ratings[mode_name] = BrawlerTrueSkill.get_rating_from_db_row(row, rows_desc)
 
     def populate_map_ratings(self):
+        """
+        Populates the map ratings for this brawler from the database.
+        """
         self.__cursor.execute(f"SELECT * FROM {SCHEMA_NAME}.\"{MAP_RATING_TABLE}\" WHERE \"{BRAWLER_NAME_KEY}\" "
                               f"= \'{self.__brawler_name}\'")
 
@@ -171,6 +233,13 @@ class BrawlerTrueSkill:
 
     @staticmethod
     def get_rating_from_db_row(row, row_description: dict):
+        """
+        Gets a TrueSkillRating object from a database row.
+
+        :param row: database row
+        :param row_description: dictionary mapping column names to column indices
+        :return: rating returned from the database
+        """
         return TrueSkillRating(
             Rating(row[row_description[PRO_PLAYER_MU_KEY]], row[row_description[PRO_PLAYER_SIGMA_KEY]]),
             row[row_description[PRO_PLAYER_BATTLE_COUNT_KEY]],
@@ -181,6 +250,14 @@ class BrawlerTrueSkill:
         )
 
     def insert_rating_to_db_rows(self, rating: TrueSkillRating, rating_type: RatingType, mode_name=None, map_name=None):
+        """
+        Inserts a TrueSkillRating object into the database.
+
+        :param rating: TrueSkill rating object representing the rating
+        :param rating_type: type of the rating, global, mode, or map
+        :param mode_name: name of the mode the rating is for
+        :param map_name: name of the map the rating is for
+        """
         if rating_type == RatingType.GLOBAL:
             self.__cursor.execute(f"INSERT INTO {SCHEMA_NAME}.\"{GLOBAL_RATING_TABLE}\" "
                                   f"("
@@ -240,6 +317,15 @@ class BrawlerTrueSkill:
         self.__conn.commit()
 
     def update_rating_to_db_rows(self, rating: TrueSkillRating, rating_type: RatingType, mode_name=None, map_name=None):
+        """
+        Updates a TrueSkillRating object in the database.
+
+        :param rating: the TrueSkill rating object representing the rating
+        :param rating_type: type of the rating, global, mode, or map
+        :param mode_name: the name of the mode the rating is for
+        :param map_name: the name of the map the rating is for
+        :return:
+        """
         if rating_type == RatingType.GLOBAL:
             self.__cursor.execute(f"UPDATE {SCHEMA_NAME}.\"{GLOBAL_RATING_TABLE}\" "
                                   f"SET "
