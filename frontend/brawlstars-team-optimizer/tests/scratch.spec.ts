@@ -28,16 +28,16 @@ test("table displays results for a certain mode", async ({ page }) => {
   await expect(page.getByLabel("teamCombo")).toHaveCount(10);
 });
 
-// test("table displays results for a certain mode and map", async ({ page }) => {
-//   await page.goto("http://localhost:3000/3v3-optimizer");
-//   await page.locator('[id="Mode\\ Select\\ Dropdown"]').click();
-//   await page.getByRole("option", { name: "Brawl Ball" }).click();
-//   await page.locator('[id="Map\\ Select\\ Dropdown"]').click();
-//   await page.getByRole("option", { name: "Winter Party" }).click();
-//   await page.getByLabel("Submit button").click();
-//   await page.waitForTimeout(5000);
-//   await expect(page.getByLabel("teamCombo")).toHaveCount(10);
-// });
+test("table displays results for a certain mode and map", async ({ page }) => {
+  await page.goto("http://localhost:3000/3v3-optimizer");
+  await page.locator('[id="Mode\\ Select\\ Dropdown"]').click();
+  await page.getByRole("option", { name: "Brawl Ball" }).click();
+  await page.locator('[id="Map\\ Select\\ Dropdown"]').click();
+  await page.getByRole("option", { name: "Winter Party" }).click();
+  await page.getByLabel("Submit button").click();
+  await page.waitForTimeout(5000);
+  await expect(page.getByLabel("teamCombo")).toHaveCount(10);
+});
 
 test("preferences?", async ({ page }) => {
   await page.goto("http://localhost:3000/3v3-optimizer");

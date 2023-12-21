@@ -136,6 +136,7 @@ export default function TeamOpt3v3() {
   }, []);
   const [allBrawlers, setAllBrawlers] = useState<[string, string][]>([]);
   const [allMapModes, setAllMapModes] = useState<[string, string[]][]>([]);
+  const [teamsToBeAdded, setTeamsToBeAdded] = useState<team[]>([]);
   const [currentMode, setCurrentMode] = useState<string>("Select a mode");
   const [currentMap, setCurrentMap] = useState<string>("Select a map");
   const [errorBanner, setErrorBanner] = useState<Error>(Error.NO_ERROR); // 0 for no banner, 1 for error with api, 2 for [insert here]
@@ -143,6 +144,38 @@ export default function TeamOpt3v3() {
   const player1 = usePlayerState(1);
   const player2 = usePlayerState(2);
   const player3 = usePlayerState(3);
+
+  const setTable = async () => {
+    const brawlers: Set<string>[] = getBrawlerList();
+    const teams = await populateTable(brawlers, currentMode, currentMap);
+    console.log("Length of teams is: " + teams.length);
+    setTeamsToBeAdded(teams);
+    setRows(teams);
+  };
+
+  useEffect(() => {
+    // Define an asynchronous function to update Firestore
+    const updateFirestore = async () => {
+      if (auth.currentUser) {
+        const userRef = doc(db, "Users", auth.currentUser?.uid);
+        const userDoc = await getDoc(userRef);
+
+        if (userDoc.exists()) {
+          const currentPastTeams: team[] = userDoc.data().PastTeams || [];
+          if (teamsToBeAdded && teamsToBeAdded.length > 0) {
+            const newPastTeams = [...currentPastTeams, ...teamsToBeAdded];
+
+            await updateDoc(userRef, {
+              pastTeams: arrayUnion(...newPastTeams),
+            });
+          }
+        }
+      }
+    };
+
+    // Call the Firestore update function whenever teamsToBeAdded changes
+    updateFirestore();
+  }, [teamsToBeAdded]);
 
   // useEffect(() => {
   //   const fetchUserData = async () => {
@@ -561,45 +594,45 @@ export default function TeamOpt3v3() {
           id="button"
           className="optimizerButton"
           onClick={async () => {
-            let teamsToBeAdded: team[] = [];
-            const setTable = async () => {
-              const brawlers: Set<string>[] = getBrawlerList();
-              const teams = await populateTable(
-                brawlers,
-                currentMode,
-                currentMap
-              );
-              teamsToBeAdded = teams;
-              setRows(teams);
-            };
-            setTable();
-            if (auth.currentUser) {
-              const userRef = doc(db, "Users", auth.currentUser?.uid);
+            // let teamsToBeAdded: team[] = [];
+            // const setTable = async () => {
+            //   const brawlers: Set<string>[] = getBrawlerList();
+            //   const teams = await populateTable(
+            //     brawlers,
+            //     currentMode,
+            //     currentMap
+            //   );
+            //   teamsToBeAdded = teams;
+            //   setRows(teams);
+            // };
+            await setTable();
+            // if (auth.currentUser) {
+            //   const userRef = doc(db, "Users", auth.currentUser?.uid);
 
-              const userDoc = await getDoc(userRef);
+            //   const userDoc = await getDoc(userRef);
 
-              if (userDoc.exists()) {
-                const currentPastTeams: team[] = userDoc.data().PastTeams || [];
-                // const newPastTeams = [...currentPastTeams, ...[teamsToBeAdded]];
-                // if (teamsToBeAdded) {
-                //   for (const team of [teamsToBeAdded]) {
-                //     // Add the team using arrayUnion
-                //     currentPastTeams.push(team);
-                //   }
+            //   if (userDoc.exists()) {
+            //     const currentPastTeams: team[] = userDoc.data().PastTeams || [];
+            //     // const newPastTeams = [...currentPastTeams, ...[teamsToBeAdded]];
+            //     // if (teamsToBeAdded) {
+            //     //   for (const team of [teamsToBeAdded]) {
+            //     //     // Add the team using arrayUnion
+            //     //     currentPastTeams.push(team);
+            //     //   }
 
-                //   await updateDoc(userRef, {
-                //     pastTeams: currentPastTeams,
-                //   });
-                // }
-                if (teamsToBeAdded && teamsToBeAdded.length > 0) {
-                  const newPastTeams = [...currentPastTeams, ...teamsToBeAdded];
+            //     //   await updateDoc(userRef, {
+            //     //     pastTeams: currentPastTeams,
+            //     //   });
+            //     // }
+            //     if (teamsToBeAdded && teamsToBeAdded.length > 0) {
+            //       const newPastTeams = [...currentPastTeams, ...teamsToBeAdded];
 
-                  await updateDoc(userRef, {
-                    pastTeams: arrayUnion(...newPastTeams),
-                  });
-                }
-              }
-            }
+            //       await updateDoc(userRef, {
+            //         pastTeams: arrayUnion(...newPastTeams),
+            //       });
+            //     }
+            //   }
+            // }
           }}
           aria-label="Submit button"
           aria-description="Interprets the text currently entered in the command input textbox as a command and displays the result of executing the command in the result history.
@@ -814,24 +847,11 @@ async function populateTable(
   const averagesList = [...averages];
   averagesList.sort((a, b) => b[1] - a[1]);
 
-  let topTeams: [string[], number][] = averagesList.slice(0, 1000)
-    .map((team) => [[...team[0]].sort(), team[1]]);
+  const topTeams: [string[], number][] = averagesList
+    .slice(0, 10)
+    .map((team) => [[...team[0]], team[1]]);
 
   console.log(topTeams);
-  // need to remove deeply equal entries from topTeams, can you help
-  topTeams = topTeams.filter(
-      (team) => {
-        for (const team2 of topTeams) {
-          if (team[1] === team2[1]) {
-            return team[0] === team2[0];
-          }
-        }
-        return true;
-      })
-
-
-  console.log(topTeams);
-  topTeams.slice(0, 100);
   // const team1: team = {
   //   b1: "Shelly",
   //   b2: "Colt",
